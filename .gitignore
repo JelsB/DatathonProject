@@ -9,3 +9,4 @@
 .ipynb*/
 *.html
 data*/
+.DS_Store
