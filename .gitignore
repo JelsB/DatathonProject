@@ -1,0 +1,11 @@
+**data/
+**/out*/*
+**/input/*
+*_loc*
+*.json
+!/input/README
+**/references/*
+!/references/README
+.ipynb*/
+*.html
+data*/
