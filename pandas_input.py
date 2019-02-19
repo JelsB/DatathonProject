@@ -6,6 +6,7 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import json
 ##########################################################
+#snipped to open a .json file (country abbreviations)
 # with json_file.open('r') as f:
 #         data_dict = json.load(f)
 #         print('Done reading in')
