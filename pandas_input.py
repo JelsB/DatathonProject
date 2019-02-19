@@ -20,8 +20,12 @@ data = pd.read_csv(filename)
 print(data.columns)
 
 #work with only one year of data (for now) or country (for example India)
-year = 1989
-country = 'IND'
+year_of_interest = 1989
+country_of_interest = 'IND'
+
+#The sessions go from 25 to 70, each corresponding to a year from 1970 to 2015
+print(f'Sessions from {data.session.min()} to {data.session.max()}')
+print(f'during the years {data.year.min()} to {data.year.max()}')
 
 #Two ways to slice by column name:
 #The first one also allows row slicing
@@ -30,14 +34,20 @@ country = 'IND'
 # print(data['year'])
 
 #Filter data from the year we want to work with:
-year_indices = data.year==year
-country_indices = data.country==country
+year_indices = data.year==year_of_interest
+country_indices = data.country==country_of_interest
+
 #data['year_indices'] gives us the data frame with entries of the year we want.
 #we can further obtain the countries that participated that year with
-# countries = data[year_indices].country.values
+# countries = data.country[year_indices].values
+#if we do not use the '.values', then we get a recarray which has a dtype='object'
 # print(len(countries))
 years_array = data.year[country_indices]
 print(years_array.values)
 data['country'].value_counts().plot(kind='bar')
-plt.show()
+# plt.show()
 # data.plot(y=countries,kind='bar')
+
+#get a unique list of countries and get yearly data country by country
+# unique_countries = data.country.unique()
+# for c in unique_countries:
