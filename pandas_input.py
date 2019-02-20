@@ -43,8 +43,21 @@ country_indices = data.country==country_of_interest
 #if we do not use the '.values', then we get a recarray which has a dtype='object'
 # print(len(countries))
 years_array = data.year[country_indices]
+print(f'List of years when {country_of_interest} has spoken')
 print(years_array.values)
 data['country'].value_counts().plot(kind='bar')
+#To find the indices where IND occurs in the country list (just as an example,
+#this is meant to be used in the text column). Returns -1 where not found.
+#Follows default indexing, but can be changed by giving a 'start' value.
+#Verdict: str.find() does something weird, use str.contains()
+# indices_country_find = data.country.str.find('IN')
+# print(data.country.values[indices_country_find])
+print('Using the search function "contains"')
+indices_country_contains = data.country.str.contains('IND')
+print(data.country.values[indices_country_contains])
+
+#now to try and apply this to the text column
+text_contents = data.text[year_indices]
 # plt.show()
 # data.plot(y=countries,kind='bar')
 
