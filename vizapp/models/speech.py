@@ -122,17 +122,22 @@ def speech_tab(pd_df):
 
         return ColumnDataSource(data), ColumnDataSource(country_data)
 
-    def make_pie_data(country_counter, max_countries=10):
-        if max_countries>20:
+    def make_pie_data(country_counter, max_countries=15):
+        if max_countries>19:
             print('CAN\'T')
 
         most_common = country_counter.most_common(max_countries)
         unzipped = list(zip(*most_common))
-        countries = unzipped[0]
-        country_counts = unzipped[1]
+        countries = list(unzipped[0])
+        country_counts = list(unzipped[1])
         data = dict()
         data['country'] = countries
         data['counts'] = country_counts
+        all_counts = sum(country_counter.values())
+        top_counts = len(country_counts)
+        data['country'].append('other')
+        data['counts'].append(all_counts-top_counts)
+
         # NOTE: this is wrt the most common ones. TDOD change!
         total_counts = sum(data['counts'])
         data['angle'] = [i/total_counts*2*pi for i in data['counts']]
@@ -150,7 +155,7 @@ def speech_tab(pd_df):
 
     def make_pie_plot(src):
 
-        p = figure(plot_height=350, title="Pie Chart", toolbar_location=None,
+        p = figure(plot_width=400, plot_height=400, title="Pie Chart", toolbar_location=None,
                tools="hover", tooltips="@country: @counts", x_range=(-0.5, 1.0))
 
         p.wedge(x=0, y=1, radius=0.4,
