@@ -28,6 +28,7 @@ def search_keyword(data,keyword):
     # data_of_interest.year.value_counts(ascending=True).plot(kind='bar')
     for g20 in g20_countries:
         data_of_interest=data_of_interest[data_of_interest.country==g20]
+        #Clean the text (Jels) and then count the number of words in the text (Michael)
         data_of_interest.year.value_counts().plot(kind='bar',title=g20,rot=-90)
         plt.show()
 
