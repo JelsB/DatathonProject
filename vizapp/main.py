@@ -22,6 +22,7 @@ filename = Path('./data/UN/un-general-debates.csv')
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
 sample_raw_speeches = raw_speeches[:50]
+sample_dataset = dataset[:50]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
@@ -31,9 +32,13 @@ sample_raw_speeches = raw_speeches[:50]
 #                             header=[0,1], index_col=0)
 
 # Create each of the tabs
+<<<<<<< HEAD
 create_dictionary_mentions(dataset)
 exit()
 tab1 = speech_tab(sample_raw_speeches)
+=======
+tab1 = speech_tab(sample_dataset)
+>>>>>>> 7c8380c39dba3e42500bffd1ecec0bb65e9c7256
 # tab2 = density_tab(flights)
 # tab3 = table_tab(flights)
 # tab4 = map_tab(map_data, states)
