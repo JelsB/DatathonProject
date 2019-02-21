@@ -102,6 +102,12 @@ def speech_tab(pd_df):
         counter = Counter()
         country_counter = Counter()
 
+        if ' ' in word:
+            for sp in speeches:
+                count = sp.text.count(word)
+                if count > 0:
+                    sp.word_frequency[word] = count
+
         # counts = defaultdict(int)
         for sp in speeches:
             counter[sp.year] += sp.word_frequency[word]

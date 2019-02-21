@@ -17,12 +17,12 @@ from models.speech import speech_tab
 from bokeh.sampledata.us_states import data as states
 
 # Read data into dataframes
-filename = Path('./data/UN/un-general-debates.csv')
+filename = Path('../data/UN/un-general-debates.csv')
 #Load in the data and print the column names
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
-sample_raw_speeches = raw_speeches[:50]
-sample_dataset = dataset[:500]
+sample_raw_speeches = raw_speeches[:]
+sample_dataset = dataset[:]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
