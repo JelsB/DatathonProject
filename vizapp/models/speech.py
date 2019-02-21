@@ -1,9 +1,12 @@
 import re
+from math import pi
 from collections import Counter, defaultdict
 from bokeh.layouts import widgetbox, row
 from bokeh.models.widgets import TextInput
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel
+from bokeh.palettes import Category20c
+from bokeh.transform import cumsum
 
 
 class Speech(object):
@@ -97,22 +100,46 @@ def speech_tab(pd_df):
 
     def make_data_set(speeches, word):
         counter = Counter()
+        country_counter = Counter()
+
         # counts = defaultdict(int)
         for sp in speeches:
-            print(sp.year)
             counter[sp.year] += sp.word_frequency[word]
+            country_counter[sp.country] += sp.word_frequency[word]
 
         # sort by years
-        # print(counter)
         years = []
         counts = []
+
         for yr, cnt in sorted(counter.items()):
             years.append(yr)
             counts.append(cnt)
 
-        print(years, counts)
         data = {'counts':counts, 'years': years}
-        return ColumnDataSource(data)
+
+
+        country_data = make_pie_data(country_counter)
+
+        return ColumnDataSource(data), ColumnDataSource(country_data)
+
+    def make_pie_data(country_counter, max_countries=10):
+        if max_countries>20:
+            print('CAN\'T')
+
+        most_common = country_counter.most_common(max_countries)
+        unzipped = list(zip(*most_common))
+        countries = unzipped[0]
+        country_counts = unzipped[1]
+        data = dict()
+        data['country'] = countries
+        data['counts'] = country_counts
+        # NOTE: this is wrt the most common ones. TDOD change!
+        total_counts = sum(data['counts'])
+        data['angle'] = [i/total_counts*2*pi for i in data['counts']]
+        data['color'] = Category20c[len(data['country'])]
+
+        return data
+
 
     def make_plot(src):
         p = figure(plot_width=400, plot_height=400)
@@ -121,10 +148,31 @@ def speech_tab(pd_df):
 
         return p
 
+    def make_pie_plot(src):
+
+        p = figure(plot_height=350, title="Pie Chart", toolbar_location=None,
+               tools="hover", tooltips="@country: @counts", x_range=(-0.5, 1.0))
+
+        p.wedge(x=0, y=1, radius=0.4,
+        start_angle=cumsum('angle', include_zero=True),
+        end_angle=cumsum('angle'),
+        line_color="white", fill_color='color', legend='country', source=src)
+
+        p.axis.axis_label=None
+        p.axis.visible=False
+        p.grid.grid_line_color = None
+
+        return p
+
+
+
     def update(attr, old, new):
-        word_frequency_to_plot = make_data_set(list_of_sp_obj, text_input.value)
+        word_frequency_to_plot, pie_src_new = make_data_set(list_of_sp_obj, text_input.value)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
+        pie_src.data.update(pie_src_new.data)
+
+
 
     print('making objs')
     # print(pd_df.values)
@@ -140,16 +188,17 @@ def speech_tab(pd_df):
 
     text_input.on_change('value', update)
 
-    src = make_data_set(list_of_sp_obj, text_input.value)
+    src, pie_src = make_data_set(list_of_sp_obj, text_input.value)
 
     p = make_plot(src)
+    pie = make_pie_plot(pie_src)
     # Put controls in a single element
     controls = widgetbox(text_input)
     # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
 
 
     # Create a row layout
-    layout = row(controls, p)
+    layout = row(controls, p, pie)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title = 'Word frequency')
