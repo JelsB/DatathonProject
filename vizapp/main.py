@@ -10,7 +10,7 @@ from bokeh.models.widgets import Tabs
 
 
 # Each tab is drawn by one script
-from models.speech import speech_tab
+from models.speech import speech_tab,create_dictionary_mentions
 
 
 # Using included state data from Bokeh for map
@@ -31,6 +31,8 @@ sample_raw_speeches = raw_speeches[:50]
 #                             header=[0,1], index_col=0)
 
 # Create each of the tabs
+create_dictionary_mentions(dataset)
+exit()
 tab1 = speech_tab(sample_raw_speeches)
 # tab2 = density_tab(flights)
 # tab3 = table_tab(flights)

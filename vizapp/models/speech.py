@@ -95,3 +95,8 @@ def speech_tab(pd_series):
     list_of_sp_obj = list((Speech(text) for text in pd_series.values))
     print('done making objs')
     do_stuff(list_of_sp_obj)
+
+def create_dictionary_mentions(pd_df):
+    dict_is_mentioned_by = {}
+    dict_mentions = {}
+    
