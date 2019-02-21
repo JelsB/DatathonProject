@@ -1,11 +1,16 @@
 import re
 from collections import Counter
+from bokeh.layouts import widgetbox
+from bokeh.models.widgets import TextInput
 
 class Speech(object):
     """docstring for Speech."""
-    def __init__(self, text):
+    def __init__(self, df_row):
         super(Speech, self).__init__()
-        self.text = text
+        self.year = df_row.year
+        self.country = df_row.country
+        self.session = df_row.session
+        self.text = df_row.text
         self.cleaned_text = self.remove_punctuations()
         self.list_of_words = self.split_text()
         self.number_of_words = self.count_total_words()
@@ -78,7 +83,7 @@ class Speech(object):
 
 
 
-def speech_tab(pd_series):
+def speech_tab(pd_df):
 
     def do_stuff(list_of_sp_obj):
         for sp in list_of_sp_obj:
@@ -89,9 +94,36 @@ def speech_tab(pd_series):
     def make_plot(src):
         pass
 
+    def make_data_set(word):
+        pass
+
+
+    def update(attr, old, new):
+        word_frequency_to_plot = make_data_set(text_input.value)
+        pass
 
     print('making objs')
-    # print(pd_series.values)
-    list_of_sp_obj = list((Speech(text) for text in pd_series.values))
+    # print(pd_df.values)
+    list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
     print('done making objs')
     do_stuff(list_of_sp_obj)
+
+
+
+    # text_input = TextInput(value="war", title="Label:")
+    #
+    # text_input.on_change('value', update)
+    #
+    # p = make_plot(src)
+	# # Put controls in a single element
+    # controls = widgetbox(text_input)
+	# # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
+    #
+    #
+	# # Create a row layout
+	# layout = row(controls, p)
+    #
+	# # Make a tab with the layout
+	# tab = Panel(child=layout, title = 'Histogram')
+    #
+    # return tab
