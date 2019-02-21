@@ -1,7 +1,13 @@
 import re
-from collections import Counter
-from bokeh.layouts import widgetbox
+from math import pi
+from collections import Counter, defaultdict
+from bokeh.layouts import widgetbox, row
 from bokeh.models.widgets import TextInput
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, Panel
+from bokeh.palettes import Category20c
+from bokeh.transform import cumsum
+
 
 class Speech(object):
     """docstring for Speech."""
@@ -91,39 +97,115 @@ def speech_tab(pd_df):
             print(f'Average word length: {sp.average_word_length}')
             print(f"Times \"war\" mentioned: {sp.word_frequency['war']}")
 
-    def make_plot(src):
-        pass
 
-    def make_data_set(word):
-        pass
+    def make_data_set(speeches, word):
+        counter = Counter()
+        country_counter = Counter()
+
+        # counts = defaultdict(int)
+        for sp in speeches:
+            counter[sp.year] += sp.word_frequency[word]
+            country_counter[sp.country] += sp.word_frequency[word]
+
+        # sort by years
+        years = []
+        counts = []
+
+        for yr, cnt in sorted(counter.items()):
+            years.append(yr)
+            counts.append(cnt)
+
+        data = {'counts':counts, 'years': years}
+
+
+        country_data = make_pie_data(country_counter)
+
+        return ColumnDataSource(data), ColumnDataSource(country_data)
+
+    def make_pie_data(country_counter, max_countries=15):
+        if max_countries>19:
+            print('CAN\'T')
+
+        most_common = country_counter.most_common(max_countries)
+        unzipped = list(zip(*most_common))
+        countries = list(unzipped[0])
+        country_counts = list(unzipped[1])
+        data = dict()
+        data['country'] = countries
+        data['counts'] = country_counts
+        all_counts = sum(country_counter.values())
+        top_counts = len(country_counts)
+        data['country'].append('other')
+        data['counts'].append(all_counts-top_counts)
+
+        # NOTE: this is wrt the most common ones. TDOD change!
+        total_counts = sum(data['counts'])
+        data['angle'] = [i/total_counts*2*pi for i in data['counts']]
+        data['color'] = Category20c[len(data['country'])]
+
+        return data
+
+
+    def make_plot(src):
+        p = figure(plot_width=400, plot_height=400)
+        # print('SRC', src['years'], src['counts'])
+        p.line('years', 'counts', source=src)
+
+        return p
+
+    def make_pie_plot(src):
+
+        p = figure(plot_width=400, plot_height=400, title="Pie Chart", toolbar_location=None,
+               tools="hover", tooltips="@country: @counts", x_range=(-0.5, 1.0))
+
+        p.wedge(x=0, y=1, radius=0.4,
+        start_angle=cumsum('angle', include_zero=True),
+        end_angle=cumsum('angle'),
+        line_color="white", fill_color='color', legend='country', source=src)
+
+        p.axis.axis_label=None
+        p.axis.visible=False
+        p.grid.grid_line_color = None
+
+        return p
+
 
 
     def update(attr, old, new):
-        word_frequency_to_plot = make_data_set(text_input.value)
-        pass
+        word_frequency_to_plot, pie_src_new = make_data_set(list_of_sp_obj, text_input.value)
+        # print(text_input.value, word_frequency_to_plot)
+        src.data.update(word_frequency_to_plot.data)
+        pie_src.data.update(pie_src_new.data)
+
+
 
     print('making objs')
     # print(pd_df.values)
     list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
+    list_of_sp_obj = sorted(list_of_sp_obj, key=lambda sp: sp.year)
+    print(len(list_of_sp_obj))
     print('done making objs')
     do_stuff(list_of_sp_obj)
 
 
 
-    # text_input = TextInput(value="war", title="Label:")
-    #
-    # text_input.on_change('value', update)
-    #
-    # p = make_plot(src)
-	# # Put controls in a single element
-    # controls = widgetbox(text_input)
-	# # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
-    #
-    #
-	# # Create a row layout
-	# layout = row(controls, p)
-    #
-	# # Make a tab with the layout
-	# tab = Panel(child=layout, title = 'Histogram')
-    #
-    # return tab
+    text_input = TextInput(value="war", title="Label:")
+
+    text_input.on_change('value', update)
+
+    src, pie_src = make_data_set(list_of_sp_obj, text_input.value)
+
+    p = make_plot(src)
+    pie = make_pie_plot(pie_src)
+    # Put controls in a single element
+    controls = widgetbox(text_input)
+    # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
+
+
+    # Create a row layout
+    layout = row(controls, p, pie)
+
+    # Make a tab with the layout
+    tab = Panel(child=layout, title = 'Word frequency')
+
+    return tab
