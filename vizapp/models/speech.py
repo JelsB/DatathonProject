@@ -1,7 +1,10 @@
 import re
-from collections import Counter
-from bokeh.layouts import widgetbox
+from collections import Counter, defaultdict
+from bokeh.layouts import widgetbox, row
 from bokeh.models.widgets import TextInput
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, Panel
+
 
 class Speech(object):
     """docstring for Speech."""
@@ -91,39 +94,64 @@ def speech_tab(pd_df):
             print(f'Average word length: {sp.average_word_length}')
             print(f"Times \"war\" mentioned: {sp.word_frequency['war']}")
 
+
+    def make_data_set(speeches, word):
+        counter = Counter()
+        # counts = defaultdict(int)
+        for sp in speeches:
+            print(sp.year)
+            counter[sp.year] += sp.word_frequency[word]
+
+        # sort by years
+        # print(counter)
+        years = []
+        counts = []
+        for yr, cnt in sorted(counter.items()):
+            years.append(yr)
+            counts.append(cnt)
+
+        print(years, counts)
+        data = {'counts':counts, 'years': years}
+        return ColumnDataSource(data)
+
     def make_plot(src):
-        pass
+        p = figure(plot_width=400, plot_height=400)
+        # print('SRC', src['years'], src['counts'])
+        p.line('years', 'counts', source=src)
 
-    def make_data_set(word):
-        pass
-
+        return p
 
     def update(attr, old, new):
-        word_frequency_to_plot = make_data_set(text_input.value)
-        pass
+        word_frequency_to_plot = make_data_set(list_of_sp_obj, text_input.value)
+        # print(text_input.value, word_frequency_to_plot)
+        src.data.update(word_frequency_to_plot.data)
 
     print('making objs')
     # print(pd_df.values)
     list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
+    list_of_sp_obj = sorted(list_of_sp_obj, key=lambda sp: sp.year)
+    print(len(list_of_sp_obj))
     print('done making objs')
     do_stuff(list_of_sp_obj)
 
 
 
-    # text_input = TextInput(value="war", title="Label:")
-    #
-    # text_input.on_change('value', update)
-    #
-    # p = make_plot(src)
-	# # Put controls in a single element
-    # controls = widgetbox(text_input)
-	# # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
-    #
-    #
-	# # Create a row layout
-	# layout = row(controls, p)
-    #
-	# # Make a tab with the layout
-	# tab = Panel(child=layout, title = 'Histogram')
-    #
-    # return tab
+    text_input = TextInput(value="war", title="Label:")
+
+    text_input.on_change('value', update)
+
+    src = make_data_set(list_of_sp_obj, text_input.value)
+
+    p = make_plot(src)
+    # Put controls in a single element
+    controls = widgetbox(text_input)
+    # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
+
+
+    # Create a row layout
+    layout = row(controls, p)
+
+    # Make a tab with the layout
+    tab = Panel(child=layout, title = 'Word frequency')
+
+    return tab
