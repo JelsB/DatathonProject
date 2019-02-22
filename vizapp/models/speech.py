@@ -19,8 +19,9 @@ class Speech(object):
         self.country = df_row.country
         self.session = df_row.session
         self.text = df_row.text
-        self.cleaned_text = self.remove_punctuations()
-        self.list_of_words = self.split_text()
+        self.cleaned_sentences = self.clean_text_keep_punctuation()
+        self.cleaned_text = self.clean_text_remove_punctuation()
+        self.list_of_words = self.get_words()
         self.number_of_words = self.count_total_words()
         self.average_word_length = self.get_average_word_length()
         self.number_of_sentences = self.count_sentences()
@@ -35,7 +36,7 @@ class Speech(object):
 
     def count_sentences(self):
         """Count punctuations"""
-        return len(re.findall('[.?!]', self.text))
+        return len(nltk.tokenize.sent_tokenize(self.cleaned_sentences))
 
     def count_unique_words(self):
         """
@@ -59,6 +60,9 @@ class Speech(object):
         """
         # Counter obj
         return self.word_frequency.most_common(show)
+
+    def get_breakdown(speech):
+        return
 
     def replace_long_spaces(self, text):
         return re.sub(r'\s+', ' ', text)
@@ -93,12 +97,25 @@ class Speech(object):
     def remove_parentheses(self,text):
         return re.sub(r'\n\(.\)','\n',text)
 
-    def remove_colon(self,text):
-        return re.sub(r'[:,;]',' ',text)
+    def remove_common(self,text):
+        return re.sub(r'[:,;,?,!]',' ',text)
 
-    def remove_punctuations(self):
+    def clean_text_keep_punctuation(self):
+        text = self.text
+        text = self.remove_tab(text)
+        text = self.remove_linenumber(text)
+        text = self.remove_trailing_quote(text)
+        text = self.remove_leading_quote(text)
+        text = self.remove_whitespace_leading_quote(text)
+        text = self.remove_whitespace_trailing_quote(text)
+        text = self.remove_parentheses(text)
+        text = self.remove_newline(text)
+        text = self.replace_long_spaces(text)
+        return text
 
-        text = self.remove_comma(self.text)
+    def clean_text_remove_punctuation(self):
+        text = self.text
+        text = self.remove_comma(text)
         text = self.remove_dot(text)
         text = self.remove_tab(text)
         text = self.remove_linenumber(text)
@@ -108,13 +125,13 @@ class Speech(object):
         text = self.remove_whitespace_trailing_quote(text)
         text = self.remove_parentheses(text)
         text = self.remove_newline(text)
-        text = self.remove_colon(text)
+        text = self.remove_common(text)
         text = self.replace_long_spaces(text)
-
         return text
 
-    def split_text(self):
-        list_of_words = self.cleaned_text.split(" ")
+
+    def get_words(self):
+        list_of_words = nltk.tokenize.word_tokenize(self.cleaned_text)
         # remove leftover empty elements
         list_of_words = list(filter(None, list_of_words))
 
