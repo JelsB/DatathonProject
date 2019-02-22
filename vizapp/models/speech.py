@@ -195,19 +195,14 @@ def speech_tab(pd_df):
                 else:
                     count = float('nan')
                 selected_data[country_name].append(count)
-        print(selected_data)
-            #
-            # for yr, cnt in sorted(val.items()):
-            #     if not yr in years:
-            #         selected_data[key].append(0)
-            #     else:
-            #         selected_data[key].append(cnt)
 
-            # selected_data[key] = list(sorted(val.values()))
-            # selected_data[f'years_{key}'] = list(val.keys())
         multi_counts = [counts] + [val for val in selected_data.values()]
         multi_years = [years]*len(multi_counts)
-        data = {'counts':multi_counts, 'years': multi_years}
+        colors = word_colors[:len(multi_counts)]
+        labels = ['Total'] + selected_countries
+        print(labels)
+        data = {'counts':multi_counts, 'years': multi_years, 'colors': colors,
+                'labels': labels}
 
 
         country_data = make_pie_data(country_counter)
@@ -241,7 +236,9 @@ def speech_tab(pd_df):
     def make_plot(src, selected_countries):
         p = figure(plot_width=400, plot_height=400)
         # print('SRC', src['years'], src['counts'])
-        p.multi_line('years', 'counts', source=src)
+        # print(src.daa['labels'])
+        p.multi_line('years', 'counts', color='colors', legend='labels', source=src)
+         #
         # print(selected_countries)
         # for country in selected_countries:
         #     p.line('years', country, source=src)
@@ -254,13 +251,13 @@ def speech_tab(pd_df):
                tools="hover", tooltips="@country: @counts", x_range=(-0.5, 1.0))
 
         p.wedge(x=0, y=1, radius=0.4,
-        start_angle=cumsum('angle', include_zero=True),
-        end_angle=cumsum('angle'),
-        line_color="white", fill_color='color', legend='country', source=src)
+                start_angle=cumsum('angle', include_zero=True),
+                end_angle=cumsum('angle'),
+                line_color="white", fill_color='color', legend='country', source=src)
 
         p.axis.axis_label=None
         p.axis.visible=False
-        p.grid.grid_line_color = Nonelist_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
+        p.grid.grid_line_color = None
 
         return p
 
@@ -282,9 +279,12 @@ def speech_tab(pd_df):
     # print(pd_df.values)
     list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
     list_of_sp_obj = sorted(list_of_sp_obj, key=lambda sp: sp.year)
-    print(len(list_of_sp_obj))
+    # print(len(list_of_sp_obj))
     print('done making objs')
-    do_stuff(list_of_sp_obj)
+    # do_stuff(list_of_sp_obj)
+
+    word_colors = Category20_16
+    word_colors.sort()
 
     text_input = TextInput(value="war", title="Label:")
     text_input.on_change('value', update)
