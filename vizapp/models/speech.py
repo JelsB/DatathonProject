@@ -1,4 +1,5 @@
 import re
+import nltk
 from math import pi
 from collections import Counter, defaultdict
 from bokeh.layouts import widgetbox, row
@@ -70,11 +71,43 @@ class Speech(object):
     def remove_dot(self, text):
         return re.sub('\.', ' ', text)
 
+    def remove_tab(self,text):
+        return re.sub(r'\t',' ',text)
+
+    def remove_linenumber(self,text):
+        return re.sub(r'\n[0-9]+.','\n',text)
+
+    def remove_trailing_quote(self,text):
+        return re.sub(r'\'\n','\n',text)
+
+    def remove_leading_quote(self,text):
+        return re.sub(r'\n\'','\n',text)
+
+    def remove_whitespace_leading_quote(self,text):
+        return re.sub(r' \'',' ',text)
+
+    def remove_whitespace_trailing_quote(self,text):
+        return re.sub(r'\' ',' ',text)
+
+    def remove_parentheses(self,text):
+        return re.sub(r'\n\(.\)','\n',text)
+
+    def remove_colon(self,text):
+        return re.sub(r'[:,;]',' ',text)
+
     def remove_punctuations(self):
 
         text = self.remove_comma(self.text)
         text = self.remove_dot(text)
+        text = self.remove_tab(text)
+        text = self.remove_linenumber(text)
+        text = self.remove_trailing_quote(text)
+        text = self.remove_leading_quote(text)
+        text = self.remove_whitespace_leading_quote(text)
+        text = self.remove_whitespace_trailing_quote(text)
+        text = self.remove_parentheses(text)
         text = self.remove_newline(text)
+        text = self.remove_colon(text)
         text = self.replace_long_spaces(text)
 
         return text
@@ -171,7 +204,7 @@ def speech_tab(pd_df):
 
         p.axis.axis_label=None
         p.axis.visible=False
-        p.grid.grid_line_color = None
+        p.grid.grid_line_color = Nonelist_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
 
         return p
 
