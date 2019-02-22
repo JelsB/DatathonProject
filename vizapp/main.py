@@ -45,13 +45,13 @@ speech_objects = make_speeches(sample_dataset)
 tab1 = speech_tab(speech_objects)
 
 # tab2 = density_tab(flights)
-# tab3 = table_tab(flights)
-# tab4 = map_tab(map_data, states)
+tab3 = table_tab(speech_objects)
+tab4 = map_tab(speech_objects)
 # tab5 = route_tab(flights)
 
 # create_dict(list_of_sp_obj)
 # Put all the tabs into one application
-tabs = Tabs(tabs = [tab1])#, tab2, tab3, tab4, tab5])
+tabs = Tabs(tabs = [tab1, tab4])#, tab2, tab3, tab4, tab5])
 
 # Put the tabs in the current document for display
 curdoc().add_root(tabs)
