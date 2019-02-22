@@ -13,6 +13,7 @@ from bokeh.models.widgets import Tabs
 
 
 # Each tab is drawn by one script
+from models.make_speeches import make_speeches
 from models.speech import speech_tab
 from models.country import create_dict
 
@@ -26,7 +27,7 @@ filename = Path('./data/UN/un-general-debates.csv')
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
 sample_raw_speeches = raw_speeches[:100]
-sample_dataset = dataset[:100]
+sample_dataset = dataset[:500]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
@@ -38,9 +39,10 @@ sample_dataset = dataset[:100]
 # Formatted Flight Delay Data for map
 # map_data = pd.read_csv(join(dirname(__file__), 'data', 'flights_map.csv'),
 #                             header=[0,1], index_col=0)
+speech_objects = make_speeches(sample_dataset)
 
 # Create each of the tabs
-tab1 = speech_tab(sample_dataset)
+tab1 = speech_tab(speech_objects)
 
 # tab2 = density_tab(flights)
 # tab3 = table_tab(flights)

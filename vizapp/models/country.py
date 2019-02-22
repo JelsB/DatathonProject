@@ -7,7 +7,11 @@ from bokeh.models import ColumnDataSource, Panel
 from bokeh.palettes import Category20c
 from bokeh.transform import cumsum
 import pickle
+<<<<<<< HEAD
 from .speech import Speech
+=======
+from .make_speeches import Speech
+>>>>>>> 85fdb1b135e2f22dfffa42d67f6aeca787c56d45
 
 # load in country code dictionary:
 with open('data/members_dic.pkl', 'rb') as pkl_file:
