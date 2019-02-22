@@ -39,6 +39,16 @@ def create_dict(list_of_sp_obj):
                 else:
                     dict_is_mentioned_by[country_abbr][sp_obj.year] = [[sp_obj.country,sp_obj.word_frequency[country_name]]]
 
+<<<<<<< HEAD
+=======
+                #
+                # dict_mentions[sp_obj.country][sp_obj.year]=[country_abbr,sp_obj.word_frequency[country_name]]
+                # print("didn't break one")
+                # dict_is_mentioned_by[country_abbr][sp_obj.year][sp_obj.country]=sp_obj.word_frequency[country_name]
+                # print("didn't break two")
+
+
+>>>>>>> 1d4b62bc393803e1dbbac8bf5cbc5a761e9815ca
     for sp in list_of_sp_obj:
         find_country_in_text(sp)
     with open('mentions.pickle', 'wb') as handle:

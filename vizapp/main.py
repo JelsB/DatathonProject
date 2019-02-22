@@ -16,6 +16,7 @@ from bokeh.models.widgets import Tabs
 from models.make_speeches import make_speeches
 from models.speech import speech_tab
 from models.country import create_dict
+from models.full_text import text_tab
 
 
 # Using included state data from Bokeh for map
@@ -45,13 +46,13 @@ speech_objects = make_speeches(sample_dataset)
 tab1 = speech_tab(speech_objects)
 
 # tab2 = density_tab(flights)
-# tab3 = table_tab(flights)
-# tab4 = map_tab(map_data, states)
+tab3 = text_tab(speech_objects)
+# tab4 = map_tab(speech_objects)
 # tab5 = route_tab(flights)
 
-# create_dict(dataset)
+# create_dict(list_of_sp_obj)
 # Put all the tabs into one application
-tabs = Tabs(tabs = [tab1])#, tab2, tab3, tab4, tab5])
+tabs = Tabs(tabs = [tab1, tab3])#, tab4])#, tab2, tab3, tab4, tab5])
 
 # Put the tabs in the current document for display
 curdoc().add_root(tabs)
