@@ -1,4 +1,4 @@
-**data/
+**data/UN/**
 **/out*/*
 **/input/*
 *_loc*
@@ -8,5 +8,4 @@
 !/references/README
 .ipynb*/
 *.html
-data*/
 .DS_Store
