@@ -6,14 +6,12 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
 from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
-<<<<<<< HEAD
-=======
 from bokeh.events import ButtonClick
 
->>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
 # from .utils import country_dic
 from .utils import country_dic
 from .utils import country_shapes
+
 
 def speech_tab(list_of_sp_obj):
 
@@ -60,8 +58,6 @@ def speech_tab(list_of_sp_obj):
                     count = float('nan')
                 selected_data[country_name].append(count)
 
-
-
         multi_counts = [val for val in selected_data.values()]
         labels = selected_countries
         if show_total:
@@ -69,15 +65,9 @@ def speech_tab(list_of_sp_obj):
             labels = ['Total'] + labels
 
         colors = word_colors[:len(multi_counts)]
-<<<<<<< HEAD
-        labels = ['Total'] + selected_countries
-        print(labels)
-        data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
-=======
         multi_years = [years]*len(multi_counts)
 
-        data = {'counts':multi_counts, 'years': multi_years, 'colors': colors,
->>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
+        data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
                 'labels': labels}
 
         country_data = make_pie_data(country_counter)
@@ -151,16 +141,10 @@ def speech_tab(list_of_sp_obj):
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
-<<<<<<< HEAD
          pie_src_new) = make_data_set(list_of_sp_obj,
                                       text_input.value,
-                                      multi_select.value)
-=======
-        pie_src_new) = make_data_set(list_of_sp_obj,
-                                     text_input.value,
-                                     multi_select.value,
-                                     total_box.active)
->>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
+                                      multi_select.value,
+                                      total_box.active)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
@@ -180,7 +164,7 @@ def speech_tab(list_of_sp_obj):
     total_box.on_change('active', update)
 
     src, pie_src = make_data_set(list_of_sp_obj, text_input.value,
-                                multi_select.value, total_box.active)
+                                 multi_select.value, total_box.active)
 
     p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
