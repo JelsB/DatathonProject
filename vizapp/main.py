@@ -25,8 +25,8 @@ filename = Path('./data/UN/un-general-debates.csv')
 #Load in the data and print the column names
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
-sample_raw_speeches = raw_speeches[:50]
-sample_dataset = dataset[:50]
+sample_raw_speeches = raw_speeches[:]
+sample_dataset = dataset[:]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
@@ -50,3 +50,6 @@ with open('./data/members_dic.pkl', 'rb') as pkl_file:
 create_dict(dataset)
 # Put all the tabs into one application
 tabs = Tabs(tabs = [tab1])#, tab2, tab3, tab4, tab5])
+
+# Put the tabs in the current document for display
+curdoc().add_root(tabs)
