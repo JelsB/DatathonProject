@@ -2,11 +2,14 @@ import re
 from math import pi
 from collections import Counter, defaultdict
 from bokeh.layouts import widgetbox, row
-from bokeh.models.widgets import TextInput
+from bokeh.models.widgets import TextInput, MultiSelect
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel
-from bokeh.palettes import Category20c
+from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
+
+# from .utils import country_dic
+from .utils import country_dic
 
 
 class Speech(object):
@@ -98,9 +101,13 @@ def speech_tab(pd_df):
             print(f"Times \"war\" mentioned: {sp.word_frequency['war']}")
 
 
-    def make_data_set(speeches, word):
+    def make_data_set(speeches, word, selected_countries):
         counter = Counter()
         country_counter = Counter()
+        dict_of_selected_counters = dict()
+
+        for c in selected_countries:
+            dict_of_selected_counters[c] = Counter()
 
         if ' ' in word:
             for sp in speeches:
@@ -113,15 +120,43 @@ def speech_tab(pd_df):
             counter[sp.year] += sp.word_frequency[word]
             country_counter[sp.country] += sp.word_frequency[word]
 
+            if sp.country in selected_countries:
+                if sp.word_frequency[word]:
+                    add = sp.word_frequency[word]
+                else:
+                    add = 0
+                dict_of_selected_counters[sp.country][sp.year] += add
         # sort by years
         years = []
         counts = []
+
 
         for yr, cnt in sorted(counter.items()):
             years.append(yr)
             counts.append(cnt)
 
-        data = {'counts':counts, 'years': years}
+        selected_data = dict()
+        for country_name, cnter in dict_of_selected_counters.items():
+            selected_data[country_name] = []
+            for yr in years:
+                if yr in cnter:
+                    count = cnter[yr]
+                else:
+                    count = float('nan')
+                selected_data[country_name].append(count)
+        print(selected_data)
+            #
+            # for yr, cnt in sorted(val.items()):
+            #     if not yr in years:
+            #         selected_data[key].append(0)
+            #     else:
+            #         selected_data[key].append(cnt)
+
+            # selected_data[key] = list(sorted(val.values()))
+            # selected_data[f'years_{key}'] = list(val.keys())
+        multi_counts = [counts] + [val for val in selected_data.values()]
+        multi_years = [years]*len(multi_counts)
+        data = {'counts':multi_counts, 'years': multi_years}
 
 
         country_data = make_pie_data(country_counter)
@@ -152,10 +187,13 @@ def speech_tab(pd_df):
         return data
 
 
-    def make_plot(src):
+    def make_plot(src, selected_countries):
         p = figure(plot_width=400, plot_height=400)
         # print('SRC', src['years'], src['counts'])
-        p.line('years', 'counts', source=src)
+        p.multi_line('years', 'counts', source=src)
+        # print(selected_countries)
+        # for country in selected_countries:
+        #     p.line('years', country, source=src)
 
         return p
 
@@ -178,7 +216,11 @@ def speech_tab(pd_df):
 
 
     def update(attr, old, new):
-        word_frequency_to_plot, pie_src_new = make_data_set(list_of_sp_obj, text_input.value)
+        print('updating', multi_select.value)
+        (word_frequency_to_plot,
+        pie_src_new) = make_data_set(list_of_sp_obj,
+                                    text_input.value,
+                                     multi_select.value)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
@@ -194,18 +236,24 @@ def speech_tab(pd_df):
     do_stuff(list_of_sp_obj)
 
 
+    # print(country_dic)
 
+    # word search box
     text_input = TextInput(value="war", title="Label:")
-
     text_input.on_change('value', update)
 
-    src, pie_src = make_data_set(list_of_sp_obj, text_input.value)
+    # multi country select
+    multi_select = MultiSelect(title="Countries:", value=['CHN'],
+                                options=list(country_dic.items()))
+    multi_select.on_change('value', update)
+    #
 
-    p = make_plot(src)
+    src, pie_src = make_data_set(list_of_sp_obj, text_input.value, multi_select.value)
+
+    p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     # Put controls in a single element
-    controls = widgetbox(text_input)
-    # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
+    controls = widgetbox(text_input, multi_select)
 
 
     # Create a row layout
