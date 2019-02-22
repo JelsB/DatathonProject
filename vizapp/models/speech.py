@@ -64,7 +64,16 @@ class Speech(object):
         # Counter obj
         return self.word_frequency.most_common(show)
 
-    def get_breakdown(speech):
+    # def remove_stopwords(self)
+
+
+    def get_breakdown(self):
+        stopwords = set(ntlk.corpus.stopwords.words('english'))
+        filtered_words = []
+        for word in self.list_of_words:
+            if word not in stopwords:
+                filtered_words.append(word)
+
         return
 
     def replace_long_spaces(self, text):
@@ -101,7 +110,7 @@ class Speech(object):
         return re.sub(r'\n\(.\)','\n',text)
 
     def remove_common(self,text):
-        return re.sub(r'[:,;,?,!]',' ',text)
+        return re.sub(r'[:,;,?,!,.]',' ',text)
 
     def clean_text_keep_punctuation(self):
         text = self.text
@@ -117,19 +126,9 @@ class Speech(object):
         return text
 
     def clean_text_remove_punctuation(self):
-        text = self.text
+        text = self.cleaned_sentences
         text = self.remove_comma(text)
-        text = self.remove_dot(text)
-        text = self.remove_tab(text)
-        text = self.remove_linenumber(text)
-        text = self.remove_trailing_quote(text)
-        text = self.remove_leading_quote(text)
-        text = self.remove_whitespace_leading_quote(text)
-        text = self.remove_whitespace_trailing_quote(text)
-        text = self.remove_parentheses(text)
-        text = self.remove_newline(text)
         text = self.remove_common(text)
-        text = self.replace_long_spaces(text)
         return text
 
 
@@ -137,7 +136,6 @@ class Speech(object):
         list_of_words = nltk.tokenize.word_tokenize(self.cleaned_text)
         # remove leftover empty elements
         list_of_words = list(filter(None, list_of_words))
-
         return list_of_words
 
 
@@ -260,7 +258,7 @@ def speech_tab(pd_df):
 
         p.axis.axis_label=None
         p.axis.visible=False
-        p.grid.grid_line_color = Nonelist_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
+        p.grid.grid_line_color = None
 
         return p
 
