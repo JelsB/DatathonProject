@@ -1,19 +1,23 @@
 from math import pi
 from collections import Counter
 from bokeh.layouts import widgetbox, row
-from bokeh.models.widgets import TextInput, MultiSelect
+from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
 from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
+<<<<<<< HEAD
+=======
+from bokeh.events import ButtonClick
+
+>>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
 # from .utils import country_dic
 from .utils import country_dic
 from .utils import country_shapes
 
-
 def speech_tab(list_of_sp_obj):
 
-    def make_data_set(speeches, word, selected_countries):
+    def make_data_set(speeches, word, selected_countries, show_total):
         counter = Counter()
         country_counter = Counter()
         dict_of_selected_counters = dict()
@@ -56,12 +60,24 @@ def speech_tab(list_of_sp_obj):
                     count = float('nan')
                 selected_data[country_name].append(count)
 
-        multi_counts = [counts] + [val for val in selected_data.values()]
-        multi_years = [years]*len(multi_counts)
+
+
+        multi_counts = [val for val in selected_data.values()]
+        labels = selected_countries
+        if show_total:
+            multi_counts = [counts] + multi_counts
+            labels = ['Total'] + labels
+
         colors = word_colors[:len(multi_counts)]
+<<<<<<< HEAD
         labels = ['Total'] + selected_countries
         print(labels)
         data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
+=======
+        multi_years = [years]*len(multi_counts)
+
+        data = {'counts':multi_counts, 'years': multi_years, 'colors': colors,
+>>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
                 'labels': labels}
 
         country_data = make_pie_data(country_counter)
@@ -135,9 +151,16 @@ def speech_tab(list_of_sp_obj):
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
+<<<<<<< HEAD
          pie_src_new) = make_data_set(list_of_sp_obj,
                                       text_input.value,
                                       multi_select.value)
+=======
+        pie_src_new) = make_data_set(list_of_sp_obj,
+                                     text_input.value,
+                                     multi_select.value,
+                                     total_box.active)
+>>>>>>> 55531e6ebd17104598e89898773e6903a61aea7b
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
@@ -152,16 +175,19 @@ def speech_tab(list_of_sp_obj):
     multi_select = MultiSelect(title="Countries:", value=['CHN'],
                                options=list(country_dic.items()))
     multi_select.on_change('value', update)
-    #
 
-    src, pie_src = make_data_set(list_of_sp_obj, text_input.value, multi_select.value)
+    total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
+    total_box.on_change('active', update)
+
+    src, pie_src = make_data_set(list_of_sp_obj, text_input.value,
+                                multi_select.value, total_box.active)
 
     p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     map = make_map()
 
     # Put controls in a single element
-    controls = widgetbox(text_input, multi_select)
+    controls = widgetbox(text_input, total_box, multi_select)
 
     # Create a row layout
     layout = row(controls, p, pie, map)
