@@ -25,29 +25,29 @@ filename = Path('./data/UN/un-general-debates.csv')
 #Load in the data and print the column names
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
-sample_raw_speeches = raw_speeches[:]
-sample_dataset = dataset[:]
+sample_raw_speeches = raw_speeches[:100]
+sample_dataset = dataset[:100]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
 
 # load in country code dictionary:
-with open('./data/members_dic.pkl', 'rb') as pkl_file:
-    country_dic = pickle.load(pkl_file)
+# with open('./data/members_dic.pkl', 'rb') as pkl_file:
+#     country_dic = pickle.load(pkl_file)
 
 # Formatted Flight Delay Data for map
 # map_data = pd.read_csv(join(dirname(__file__), 'data', 'flights_map.csv'),
 #                             header=[0,1], index_col=0)
 
 # Create each of the tabs
-# tab1 = speech_tab(sample_dataset)
+tab1 = speech_tab(sample_dataset)
 
 # tab2 = density_tab(flights)
 # tab3 = table_tab(flights)
 # tab4 = map_tab(map_data, states)
 # tab5 = route_tab(flights)
 
-create_dict(dataset)
+# create_dict(dataset)
 # Put all the tabs into one application
 tabs = Tabs(tabs = [tab1])#, tab2, tab3, tab4, tab5])
 
