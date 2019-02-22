@@ -90,7 +90,7 @@ class Speech(object):
         return re.sub(r'\n+\s+', ' ', text)
 
     def remove_linenumber(self,text):
-        return re.sub(r'\n[0-9]+.','\n',text)
+        return re.sub(r'[\n[0-9]+\.|^[0-9]+\.]','\n',text)
 
     def remove_trailing_and_leading_quote(self,text):
         return re.sub(r'[\'\n|\n\'|\' | \']','\n',text)
