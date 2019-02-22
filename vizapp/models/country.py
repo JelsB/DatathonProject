@@ -7,7 +7,7 @@ from bokeh.models import ColumnDataSource, Panel
 from bokeh.palettes import Category20c
 from bokeh.transform import cumsum
 import pickle
-from speech import Speech
+from .speech import Speech
 
 # load in country code dictionary:
 with open('data/members_dic.pkl', 'rb') as pkl_file:
@@ -49,8 +49,8 @@ def create_dict(pd_df):
                 # print("didn't break two")
 
 
-    list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
-    for sp in list_of_sp_obj:
+    list_of_sp_objects = list((Speech(row) for idx, row in pd_df.iterrows()))
+    for sp in list_of_sp_objects:
         find_country_in_text(sp)
     with open('mentions.pickle', 'wb') as handle:
         print('Saving "Mentions" dictionary')
@@ -61,6 +61,16 @@ def create_dict(pd_df):
 
 
 def country_tab(pd_df):
+
+    def update(attr, old, new):
+        print('updating', multi_select.value)
+        (word_frequency_to_plot,
+        pie_src_new) = make_data_set(list_of_sp_obj,
+                                    text_input.value,
+                                     multi_select.value)
+        # print(text_input.value, word_frequency_to_plot)
+        src.data.update(word_frequency_to_plot.data)
+        pie_src.data.update(pie_src_new.data)
 
     def search_mentions(input_countries,output_countries):
         '''Input countries: ['USA','CHN']
@@ -148,34 +158,98 @@ def country_tab(pd_df):
                 number_of_mentions.append(0)
         return years,number_of_mentions
 
-    def basic_country_stats(pd_df_country):
+    def basic_country_stats(pd_df_country,years_array):
         '''@param pd_df_country: the dataset filtered by the country input
+        @param years_array: depends on input from slider
         '''
-        list_of_cn_obj=list(Speech(row) for idx,row in pd_df_country.iterrows())
+
+        list_of_sp_objs=list(Speech(row) for idx,row in pd_df_country.iterrows())
+
+    def make_data_set(speeches, word, selected_countries):
+        counter = Counter()
+        country_counter = Counter()
+        dict_of_selected_counters = dict()
+
+        for c in selected_countries:
+            dict_of_selected_counters[c] = Counter()
+
+        if ' ' in word:
+            for sp in speeches:
+                count = sp.text.count(word)
+                if count > 0:
+                    sp.word_frequency[word] = count
+
+        # counts = defaultdict(int)
+        for sp in speeches:
+            counter[sp.year] += sp.word_frequency[word]
+            country_counter[sp.country] += sp.word_frequency[word]
+
+            if sp.country in selected_countries:
+                if sp.word_frequency[word]:
+                    add = sp.word_frequency[word]
+                else:
+                    add = 0
+                dict_of_selected_counters[sp.country][sp.year] += add
+        # sort by years
+        years = []
+        counts = []
 
 
-    text_input = TextInput(value="United States of America", title="Label:")
+        for yr, cnt in sorted(counter.items()):
+            years.append(yr)
+            counts.append(cnt)
 
+        selected_data = dict()
+        for country_name, cnter in dict_of_selected_counters.items():
+            selected_data[country_name] = []
+            for yr in years:
+                if yr in cnter:
+                    count = cnter[yr]
+                else:
+                    count = float('nan')
+                selected_data[country_name].append(count)
+        print(selected_data)
+            #
+            # for yr, cnt in sorted(val.items()):
+            #     if not yr in years:
+            #         selected_data[key].append(0)
+            #     else:
+            #         selected_data[key].append(cnt)
+
+            # selected_data[key] = list(sorted(val.values()))
+            # selected_data[f'years_{key}'] = list(val.keys())
+        multi_counts = [counts] + [val for val in selected_data.values()]
+        multi_years = [years]*len(multi_counts)
+        data = {'counts':multi_counts, 'years': multi_years}
+
+
+        country_data = make_pie_data(country_counter)
+
+        return ColumnDataSource(data), ColumnDataSource(country_data)
+
+
+
+    text_input = TextInput(value="war", title="Label:")
     text_input.on_change('value', update)
 
-    #This is the country code for now, assuming that the input is correct. Once
-    #aliases are added, then this has to change to include complicated stuff.
-    country_code = list(country_dic.keys())[list(country_dic.values()).index(text_input.value)]
-    df_country = pd_df
+    # multi country select
+    multi_select = MultiSelect(title="Countries:", value=['CHN'],
+                                options=list(country_dic.items()))
+    multi_select.on_change('value', update)
+    #
 
-    src, pie_src = make_data_set(list_of_sp_obj, text_input.value)
+    src, pie_src = make_data_set(list_of_sp_obj, text_input.value, multi_select.value)
 
-    p = make_plot(src)
+    p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     # Put controls in a single element
-    controls = widgetbox(text_input)
-    # controls = WidgetBox(carrier_selection, binwidth_select, range_select)
+    controls = widgetbox(text_input, multi_select)
 
 
     # Create a row layout
     layout = row(controls, p, pie)
 
     # Make a tab with the layout
-    tab = Panel(child=layout, title = 'Country stats')
+    tab = Panel(child=layout, title = 'Word frequency')
 
     return tab
