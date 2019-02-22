@@ -3,6 +3,7 @@ from collections import Counter
 from bokeh.layouts import widgetbox
 from bokeh.models.widgets import TextInput
 
+
 class Speech(object):
     """docstring for Speech."""
     def __init__(self, df_row):
@@ -108,14 +109,6 @@ def speech_tab(pd_df):
     print('done making objs')
     do_stuff(list_of_sp_obj)
 
-<<<<<<< HEAD
-def create_dictionary_mentions(pd_df):
-    dict_is_mentioned_by = {}
-    dict_mentions = {}
-    
-=======
-
-
     # text_input = TextInput(value="war", title="Label:")
     #
     # text_input.on_change('value', update)
@@ -133,4 +126,3 @@ def create_dictionary_mentions(pd_df):
 	# tab = Panel(child=layout, title = 'Histogram')
     #
     # return tab
->>>>>>> 7c8380c39dba3e42500bffd1ecec0bb65e9c7256
