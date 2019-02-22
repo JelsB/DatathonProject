@@ -17,6 +17,9 @@ class Speech(object):
         self.average_word_length = self.get_average_word_length()
         self.number_of_sentences = self.count_sentences()
         self.word_frequency = self.count_unique_words()
+        self.filtered_words = self.filter_on_stopwords()
+        self.list_of_stems = self.get_stems()
+        self.number_of_stems = self.get_total_stems()
 
 
     def count_total_words(self):
@@ -53,17 +56,32 @@ class Speech(object):
         return self.word_frequency.most_common(show)
 
     def filter_on_stopwords(self):
-        stopwords = set(ntlk.corpus.stopwords.words('english'))
+        stopwords = set(nltk.corpus.stopwords.words('english'))
         filtered_words = []
         for word in self.list_of_words:
             if word not in stopwords:
                 filtered_words.append(word)
         return filtered_words
 
-    def get_breakdown(self):
-        words = filter_on_stopwords(self)
+    def get_stems(self):
+        words = self.filtered_words
+        stemmed_words = []
+        stemmer = nltk.stem.PorterStemmer()
+        for w in words:
+            stemmed_words.append(stemmer.stem(w))
+        unique_stems = set(stemmed_words)
+        return unique_stems
 
-        return
+    def get_total_stems(self):
+        return len(self.list_of_stems)
+
+    # def get_breakdown(self):
+    #     words = self.filtered_words
+    #     positions = nltk.pos_tag(words)
+    #     unique_positions = set(positions)
+    #
+    #
+    #     return
 
     def replace_long_spaces(self, text):
         return re.sub(r'\s+', ' ', text)
