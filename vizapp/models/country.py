@@ -16,7 +16,7 @@ with open('data/members_dic.pkl', 'rb') as pkl_file:
 dict_mentions = dict()
 dict_is_mentioned_by = dict()
 
-def create_dict(pd_df):
+def create_dict(list_of_sp_obj):
 
     def find_country_in_text(sp_obj):
         for country_abbr,country_name in country_dic.items():
@@ -49,7 +49,6 @@ def create_dict(pd_df):
                 # print("didn't break two")
 
 
-    list_of_sp_obj = list((Speech(row) for idx, row in pd_df.iterrows()))
     for sp in list_of_sp_obj:
         find_country_in_text(sp)
     with open('mentions.pickle', 'wb') as handle:

@@ -49,7 +49,7 @@ tab1 = speech_tab(speech_objects)
 # tab4 = map_tab(map_data, states)
 # tab5 = route_tab(flights)
 
-# create_dict(dataset)
+# create_dict(list_of_sp_obj)
 # Put all the tabs into one application
 tabs = Tabs(tabs = [tab1])#, tab2, tab3, tab4, tab5])
 
