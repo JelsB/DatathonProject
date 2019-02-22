@@ -9,6 +9,7 @@ from bokeh.palettes import Category20c
 from bokeh.transform import cumsum
 
 
+
 class Speech(object):
     """docstring for Speech."""
     def __init__(self, df_row):
@@ -192,8 +193,6 @@ def speech_tab(pd_df):
     print(len(list_of_sp_obj))
     print('done making objs')
     do_stuff(list_of_sp_obj)
-
-
 
     text_input = TextInput(value="war", title="Label:")
 
