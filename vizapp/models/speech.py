@@ -64,7 +64,17 @@ class Speech(object):
         # Counter obj
         return self.word_frequency.most_common(show)
 
-    def get_breakdown(speech):
+    # def remove_stopwords(self)
+
+
+    def get_breakdown(self):
+        stopwords = set(ntlk.corpus.stopwords.words('english'))
+        filtered_words = []
+        for word in self.list_of_words:
+            if word not in stopwords:
+                filtered_words.append(word)
+
+
         return
 
     def replace_long_spaces(self, text):
@@ -73,61 +83,33 @@ class Speech(object):
     def remove_newline(self, text):
         return re.sub(r'\n+\s+', '', text)
 
-    def remove_comma(self, text):
-        return re.sub(r',', ' ', text)
-
-    def remove_dot(self, text):
-        return re.sub('\.', ' ', text)
-
     def remove_tab(self,text):
         return re.sub(r'\t',' ',text)
 
     def remove_linenumber(self,text):
         return re.sub(r'\n[0-9]+.','\n',text)
 
-    def remove_trailing_quote(self,text):
-        return re.sub(r'\'\n','\n',text)
-
-    def remove_leading_quote(self,text):
-        return re.sub(r'\n\'','\n',text)
-
-    def remove_whitespace_leading_quote(self,text):
-        return re.sub(r' \'',' ',text)
-
-    def remove_whitespace_trailing_quote(self,text):
-        return re.sub(r'\' ',' ',text)
+    def remove_trailing_and_leading_quote(self,text):
+        return re.sub(r'[\'\n,\n\',\' , \']','\n',text)
 
     def remove_parentheses(self,text):
         return re.sub(r'\n\(.\)','\n',text)
 
     def remove_common(self,text):
-        return re.sub(r'[:,;,?,!]',' ',text)
+        return re.sub(r'[:,;,?,!,\.,\,,\t]',' ',text)
 
     def clean_text_keep_punctuation(self):
         text = self.text
         text = self.remove_tab(text)
         text = self.remove_linenumber(text)
-        text = self.remove_trailing_quote(text)
-        text = self.remove_leading_quote(text)
-        text = self.remove_whitespace_leading_quote(text)
-        text = self.remove_whitespace_trailing_quote(text)
+        text = self.remove_trailing_and_leading_quote(text)
         text = self.remove_parentheses(text)
         text = self.remove_newline(text)
         text = self.replace_long_spaces(text)
         return text
 
     def clean_text_remove_punctuation(self):
-        text = self.text
-        text = self.remove_comma(text)
-        text = self.remove_dot(text)
-        text = self.remove_tab(text)
-        text = self.remove_linenumber(text)
-        text = self.remove_trailing_quote(text)
-        text = self.remove_leading_quote(text)
-        text = self.remove_whitespace_leading_quote(text)
-        text = self.remove_whitespace_trailing_quote(text)
-        text = self.remove_parentheses(text)
-        text = self.remove_newline(text)
+        text = self.cleaned_sentences
         text = self.remove_common(text)
         text = self.replace_long_spaces(text)
         return text
@@ -135,9 +117,9 @@ class Speech(object):
 
     def get_words(self):
         list_of_words = nltk.tokenize.word_tokenize(self.cleaned_text)
+
         # remove leftover empty elements
         list_of_words = list(filter(None, list_of_words))
-
         return list_of_words
 
 
