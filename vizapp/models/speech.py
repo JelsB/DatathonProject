@@ -64,16 +64,16 @@ class Speech(object):
         # Counter obj
         return self.word_frequency.most_common(show)
 
-    # def remove_stopwords(self)
-
-
-    def get_breakdown(self):
+    def filter_on_stopwords(self):
         stopwords = set(ntlk.corpus.stopwords.words('english'))
         filtered_words = []
         for word in self.list_of_words:
             if word not in stopwords:
                 filtered_words.append(word)
+        return filtered_words
 
+    def get_breakdown(self):
+        words = filter_on_stopwords(self)
 
         return
 
@@ -81,26 +81,22 @@ class Speech(object):
         return re.sub(r'\s+', ' ', text)
 
     def remove_newline(self, text):
-        return re.sub(r'\n+\s+', '', text)
-
-    def remove_tab(self,text):
-        return re.sub(r'\t',' ',text)
+        return re.sub(r'\n+\s+', ' ', text)
 
     def remove_linenumber(self,text):
         return re.sub(r'\n[0-9]+.','\n',text)
 
     def remove_trailing_and_leading_quote(self,text):
-        return re.sub(r'[\'\n,\n\',\' , \']','\n',text)
+        return re.sub(r'[\'\n|\n\'|\' | \']','\n',text)
 
     def remove_parentheses(self,text):
         return re.sub(r'\n\(.\)','\n',text)
 
     def remove_common(self,text):
-        return re.sub(r'[:,;,?,!,\.,\,,\t]',' ',text)
+        return re.sub(r'[:|;|?|!|\.|,|\t]',' ',text)
 
     def clean_text_keep_punctuation(self):
         text = self.text
-        text = self.remove_tab(text)
         text = self.remove_linenumber(text)
         text = self.remove_trailing_and_leading_quote(text)
         text = self.remove_parentheses(text)
