@@ -12,6 +12,7 @@ from bokeh.palettes import Viridis256 as palette
 # from .utils import country_dic
 from .utils import country_dic
 from .utils import country_shapes
+from .utils import unique_countries_dic
 
 
 def speech_tab(list_of_sp_obj):
@@ -139,6 +140,8 @@ def speech_tab(list_of_sp_obj):
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
                      source=src)
+        p.xaxis.axis_label = 'Year'
+        p.yaxis.axis_label = 'Counts'
         #
         # print(selected_countries)
         # for country in selected_countries:
@@ -188,6 +191,18 @@ def speech_tab(list_of_sp_obj):
 
         return(p)
 
+    def make_flamingo(url):
+        p = figure(x_range=(0, 100), y_range=(0, 100), plot_width=80,
+                   plot_height=300,
+                   toolbar_location=None, title=None)
+
+        p.image_url(url=[url], x=0, y=30,
+                    w=120, h=20)
+        p.axis.visible = False
+        p.grid.visible = False
+        p.outline_line_color = None
+        return(p)
+
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
@@ -207,8 +222,8 @@ def speech_tab(list_of_sp_obj):
     text_input.on_change('value', update)
 
     # multi country select
-    multi_select = MultiSelect(title="Countries:", value=['CHN'],
-                               options=list(country_dic.items()))
+    multi_select = MultiSelect(title="Countries:", size=20, value=['CHN'],
+                               options=list(unique_countries_dic.items()))
     multi_select.on_change('value', update)
 
     total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
@@ -221,11 +236,14 @@ def speech_tab(list_of_sp_obj):
     pie = make_pie_plot(pie_src)
     map = make_map(map_src)
 
+    url = ('https://cdn5.vectorstock.com/i/thumb-large/12/79/cartoon-flamingo-vector-5151279.jpg')
+    flamingo = make_flamingo(url)
+
     # Put controls in a single element
     controls = widgetbox(text_input, total_box, multi_select)
 
     # Create a row layout
-    layout = row(controls, column(p, pie), map)
+    layout = row(column(controls, flamingo), column(p, pie), map)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title='Word frequency')
