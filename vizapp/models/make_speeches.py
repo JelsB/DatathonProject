@@ -1,5 +1,6 @@
 import re
 import nltk
+import pickle
 from collections import Counter
 
 class Speech(object):
@@ -127,6 +128,11 @@ class Speech(object):
         return list_of_words
 
 
+    def pickle_self(self, dir):
+        with open(f'{dir}/{self.country}_{self.year}.pickle', 'wb') as file:
+            pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
+            print(f'dumped pickle in {dir} {self.country}_{self.year}')
+
 
 
 def make_speeches(pd_df):
@@ -137,3 +143,19 @@ def make_speeches(pd_df):
     # print(len(list_of_sp_obj))
     print('done making objs')
     return list_of_sp_obj
+
+
+def unpickle_speeches(pickle_dir):
+    list_of_sp_obj = []
+    pickle_files = list(pickle_dir.glob('*.pickle'))
+    for f in pickle_files:
+        with f.open('rb') as file:
+            obj = pickle.load(file)
+        list_of_sp_obj.append(obj)
+
+    return list_of_sp_obj
+
+
+def pickle_speeches(list_of_sp_obj, dir):
+    for sp in list_of_sp_obj:
+        sp.pickle_self(dir)

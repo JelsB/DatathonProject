@@ -13,14 +13,17 @@ from bokeh.models.widgets import Tabs
 from bokeh.themes import built_in_themes
 
 # Each tab is drawn by one script
-from models.make_speeches import make_speeches
+from models.make_speeches import make_speeches, pickle_speeches, unpickle_speeches
 from models.speech import speech_tab
-from models.country import create_dict
-# from models.full_text import text_tab
+# from models.country import create_dict
+from models.full_text import text_tab
 
 
 # Using included state data from Bokeh for map
 from bokeh.sampledata.us_states import data as states
+
+
+
 
 # Read data into dataframes
 filename = Path('./data/UN/un-general-debates.csv')
@@ -40,8 +43,11 @@ sample_dataset = dataset[:500]
 # Formatted Flight Delay Data for map
 # map_data = pd.read_csv(join(dirname(__file__), 'data', 'flights_map.csv'),
 #                             header=[0,1], index_col=0)
-speech_objects = make_speeches(sample_dataset)
 
+# speech_objects = make_speeches(sample_dataset)
+# pickle_speeches(speech_objects, './data/UN')
+speech_objects = unpickle_speeches(Path('./data/UN'))
+print('laoded speeches')
 # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
