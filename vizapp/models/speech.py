@@ -1,4 +1,5 @@
 from math import pi
+import numpy as np
 from collections import Counter
 from bokeh.layouts import widgetbox, row, column
 from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
@@ -6,7 +7,7 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
 from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
-from bokeh.models import LogColorMapper, LinearColorMapper, HoverTool
+from bokeh.models import ColorBar, LinearColorMapper, HoverTool, BasicTicker
 from bokeh.models.widgets import RangeSlider
 from bokeh.palettes import Viridis256 as palette
 
@@ -190,6 +191,8 @@ def speech_tab(list_of_sp_obj):
         return p
 
     def make_map(src_map):
+
+        # high_col = src_map.data['rate'].np.nanmax()
         color_mapper = LinearColorMapper(palette=palette)
         TOOLS = "pan,wheel_zoom,reset,hover,save"
 
@@ -206,6 +209,10 @@ def speech_tab(list_of_sp_obj):
         p.y_range = Range1d(start=-90, end=90)
 
         p.grid.grid_line_color = None
+        # ticker = BasicTicker()
+        color_bar = ColorBar(color_mapper=color_mapper,
+                             ticker=BasicTicker(), label_standoff=10)
+        p.add_layout(color_bar, 'right')
 
         p.patches('x', 'y', source=src_map,
                   fill_color={'field': 'rate', 'transform': color_mapper},
@@ -215,11 +222,11 @@ def speech_tab(list_of_sp_obj):
 
     def make_flamingo(url):
         p = figure(x_range=(0, 100), y_range=(0, 100), plot_width=80,
-                   plot_height=300,
+                   plot_height=270,
                    toolbar_location=None, title=None)
 
         p.image_url(url=[url], x=0, y=30,
-                    w=120, h=20)
+                    w=100, h=20)
         p.axis.visible = False
         p.grid.visible = False
         p.outline_line_color = None
@@ -252,7 +259,7 @@ def speech_tab(list_of_sp_obj):
     total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
     total_box.on_change('active', update)
 
-    range_slider = RangeSlider(start=1970, end=2015, value=(1970,2015), step=1., title="Years")
+    range_slider = RangeSlider(start=1970, end=2015, value=(1970, 2015), step=1., title="Years")
     range_slider.on_change('value', update)
 
     src, pie_src, map_src = make_data_set(list_of_sp_obj, text_input.value,
