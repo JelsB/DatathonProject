@@ -24,6 +24,7 @@ def text_tab(list_of_sp_obj):
                 print('YES')
                 # data={'text':[sp.cleaned_sentences]}
                 data={'text':sp.list_of_words}
+                # data={'text':sp.text}
                 pie_data = make_pie_data(data)
                 return ColumnDataSource(data),ColumnDataSource(pie_data)
 
@@ -57,11 +58,11 @@ def text_tab(list_of_sp_obj):
         words = in_data['text']
         data = dict()
         total_counts = len(words)
-        data['pos_types'] = ['CD','DT','EX','FW','IN','JJ','MD','NN','PRP','RB','VB']
-        data['word_types'] = ['Cardinal Date', 'Determinant','Existential','Foreign Word',
+        data['pos_types'] = ['CD','DT','EX','IN','JJ','MD','NN','PRP','RB','VB']
+        data['word_types'] = ['Cardinal Date', 'Determinant','Existential',
                               'Preposition', 'Adjective', 'Modal', 'Noun', 'Personal Pronoun',
                               'Adverb', 'Verb']
-        data['counts'] = [0,0,0,0,0,0,0,0,0,0,0]
+        data['counts'] = [0,0,0,0,0,0,0,0,0,0]
 
         positioned_words = nltk.pos_tag(words)
         # print(positioned_words)
