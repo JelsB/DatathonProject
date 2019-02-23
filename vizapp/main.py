@@ -51,7 +51,7 @@ print('laoded speeches')
 # # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
-# tab2 = density_tab(flights)
+tab2 = country_tab(speech_objects)
 tab3 = text_tab(speech_objects)
 # tab4 = map_tab(speech_objects)
 # tab5 = route_tab(flights)
