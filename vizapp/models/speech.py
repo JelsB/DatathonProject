@@ -3,11 +3,13 @@ from collections import Counter
 from bokeh.layouts import widgetbox, row, column
 from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, Panel, Range1d
+from bokeh.models import ColumnDataSource, Panel, Range1d, FactorRange
 from bokeh.palettes import Category20c, Category20_16
-from bokeh.transform import cumsum
+from bokeh.transform import cumsum, factor_cmap
 from bokeh.models import LogColorMapper, LinearColorMapper
 from bokeh.palettes import Viridis256 as palette
+from bokeh.models.glyphs import VBar
+from bokeh.palettes import Viridis11
 
 # from .utils import country_dic
 from .utils import country_dic
@@ -73,9 +75,10 @@ def speech_tab(list_of_sp_obj):
 
         country_data = make_pie_data(country_counter)
         prepared_map_data = make_map_data(country_counter)
+        bar_data = make_bar_data(country_counter)
 
         return (ColumnDataSource(data), ColumnDataSource(country_data),
-                ColumnDataSource(prepared_map_data))
+                ColumnDataSource(prepared_map_data), ColumnDataSource(bar_data))
 
     def make_pie_data(country_counter, max_countries=15):
         if max_countries > 19:
@@ -133,6 +136,22 @@ def speech_tab(list_of_sp_obj):
 
         return src_map
 
+
+    def make_bar_data(country_counter, max_countries=10):
+        if max_countries > 19:
+            print('CAN\'T')
+
+        most_common = country_counter.most_common(max_countries)
+        unzipped = list(zip(*most_common))
+        countries = list(unzipped[0])
+        country_counts = list(unzipped[1])
+        print(countries)
+        data = dict()
+        data['country'] = countries
+        data['counts'] = country_counts
+
+        return data
+
     def make_plot(src, selected_countries):
         p = figure(plot_width=400, plot_height=400)
         # print('SRC', src['years'], src['counts'])
@@ -188,17 +207,45 @@ def speech_tab(list_of_sp_obj):
 
         return(p)
 
+
+    def make_bar_plot(src):
+        r_range = FactorRange(factors=src.data['country'])
+        # src.data['country']
+        p = figure(x_range=r_range, plot_height=350, title="Fruit Counts",
+                    toolbar_location=None, tools="")
+
+        # glyph = VBar(x='country', top='counts', bottom=0, width=.8,
+        #          fill_color="#e12127")
+        # p.add_glyph(src, glyph)
+        # p.vbar(x='country', top='counts', width=0.9, line_color='white',
+        #         fill_color=factor_cmap('country', palette=palette, factors=src.data['country']),
+        #         legend="country", source=src)
+        p.vbar(x='country', top='counts', bottom=0, width=.8,
+            fill_color=Viridis11[0],
+                 source=src)
+
+        return p
+
+
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
-         pie_src_new, map_src_new) = make_data_set(list_of_sp_obj,
-                                                   text_input.value,
-                                                   multi_select.value,
-                                                   total_box.active)
+         pie_src_new, map_src_new,
+         new_bar_src) = make_data_set(list_of_sp_obj,
+                                       text_input.value,
+                                       multi_select.value,
+                                       total_box.active)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
         map_src.data.update(map_src_new.data)
+        bar_src.data.update(new_bar_src.data)
+        print(bar.x_range.factors)
+        # new_xrange = FactorRange(factors=new_bar_src.data['country'])
+        # bar.x_range.update(new_xrange)
+        bar.x_range.factors = new_bar_src.data['country']
+        print(bar.x_range.factors, new_bar_src.data['country'])
+        # bar.src.data = new_bar_src.data
 
     word_colors = Category20_16
     word_colors.sort()
@@ -214,18 +261,19 @@ def speech_tab(list_of_sp_obj):
     total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
     total_box.on_change('active', update)
 
-    src, pie_src, map_src = make_data_set(list_of_sp_obj, text_input.value,
+    src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
                                           multi_select.value, total_box.active)
 
     p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     map = make_map(map_src)
+    bar = make_bar_plot(bar_src)
 
     # Put controls in a single element
     controls = widgetbox(text_input, total_box, multi_select)
 
     # Create a row layout
-    layout = row(controls, column(p, pie), map)
+    layout = row(controls, column(p, pie, bar), map)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title='Word frequency')
