@@ -8,6 +8,8 @@ class Speech(object):
         super(Speech, self).__init__()
         self.year = df_row.year
         self.country = df_row.country
+        if self.country == 'YDYE':
+            self.country = 'YEM'
         self.session = df_row.session
         self.text = df_row.text
         self.cleaned_sentences = self.clean_text_keep_punctuation()
