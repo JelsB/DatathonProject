@@ -58,11 +58,7 @@ tab3 = text_tab(speech_objects)
 
 # create_dict(list_of_sp_obj)
 # Put all the tabs into one application
-<<<<<<< HEAD
 tabs = Tabs(tabs=[tab1, tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
-=======
-tabs = Tabs(tabs=[tab1], tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
->>>>>>> c2a46d792f601ef293fdccbca3c48bd244aecfa2
 
 # Put the tabs in the current document for display
 curdoc().theme = 'light_minimal'
