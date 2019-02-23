@@ -16,8 +16,8 @@ class Speech(object):
         self.number_of_words = self.count_total_words()
         self.average_word_length = self.get_average_word_length()
         self.number_of_sentences = self.count_sentences()
-        self.word_frequency = self.count_unique_words()
         self.filtered_words = self.filter_on_stopwords()
+        self.word_frequency = self.count_unique_words()
         self.list_of_stems = self.get_stems()
         self.number_of_stems = self.get_total_stems()
 
@@ -44,7 +44,7 @@ class Speech(object):
         Counter({'a': 2, 'rr': 2, 'b': 1, 'c': 1})
 
         """
-        return Counter(self.list_of_words)
+        return Counter(self.filtered_words)
 
     def most_used_words(self, show=10):
         """Return sorted list of tuples with word and frequency
@@ -59,7 +59,7 @@ class Speech(object):
         stopwords = set(nltk.corpus.stopwords.words('english'))
         filtered_words = []
         for word in self.list_of_words:
-            if word not in stopwords:
+            if word.lower() not in stopwords:
                 filtered_words.append(word)
         return filtered_words
 
