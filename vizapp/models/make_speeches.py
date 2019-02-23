@@ -8,9 +8,7 @@ class Speech(object):
     def __init__(self, df_row):
         super(Speech, self).__init__()
         self.year = df_row.year
-        self.country = df_row.country
-        if self.country == 'YDYE':
-            self.country = 'YEM'
+        self.country = self.get_country(df_row)
         self.session = df_row.session
         self.text = df_row.text
         self.cleaned_sentences = self.clean_text_keep_punctuation()
@@ -24,6 +22,11 @@ class Speech(object):
         self.list_of_stems = self.get_stems()
         self.number_of_stems = self.get_total_stems()
 
+    def get_country(self, df_row):
+        cntry = df_row.country
+        if cntry == 'YDYE':
+            cntry = 'YEM'
+        return cntry
 
     def count_total_words(self):
         return len(self.list_of_words)

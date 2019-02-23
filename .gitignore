@@ -8,3 +8,4 @@
 .ipynb*/
 *.html
 .DS_Store
+*pickle
