@@ -1,10 +1,10 @@
 import re
 from collections import Counter
 from bokeh.layouts import widgetbox, row
-from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
+from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup, Select
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel
-from bokeh.palettes import Category20c
+from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
 from .make_speeches import Speech
 from pathlib import Path
@@ -57,7 +57,7 @@ def country_tab(list_sp_objs):
         counter = Counter()
         overall_counter = Counter()
         word_counter = dict()
-
+        print(selected_countries_inp)
         dict_of_selected_counters_inp = search_mentions(selected_countries_inp,selected_countries_out)
         dict_of_selected_counters_out = search_is_mentioned_by(selected_countries_inp,selected_countries_out)
         tot_mentions = dict()
@@ -85,7 +85,11 @@ def country_tab(list_sp_objs):
             overall_counter += sp.word_frequency
 
         most_common_words = list(dict(overall_counter.most_common(10)).keys())
-        print(most_common_words)
+        most_common_counter = Counter()
+        for mcw in most_common_words:
+            most_common_counter[mcw] = overall_counter[mcw]
+        word = list(dict(most_common_counter).keys())
+        counts = list(dict(most_common_counter).values())
         # for sp in sp_country:
         #     counter[sp.year] += sp.word_frequency[word]
 
@@ -98,29 +102,26 @@ def country_tab(list_sp_objs):
                     add = 0
                 word_counter[w][sp.year] += add
 
-        #sort by years
-        years = []
-        counts = []
 
-        for yr, cnt in sorted(dict(overall_counter.most_common(10)).items()):
-            years.append(yr)
-            counts.append(cnt)
-
+        years = range(1970,2016,1)
         selected_data = dict()
-        for word, cnter in word_counter.items():
-            selected_data[word] = []
+        for w, cnter in word_counter.items():
+            selected_data[w] = []
             for yr in years:
                 if yr in cnter:
                     count = cnter[yr]
                 else:
                     count = float('nan')
-                selected_data[word].append(count)
-        print(selected_data)
+                selected_data[w].append(count)
+        # print(selected_data)
 
-        multi_counts = [counts] + [val for val in selected_data.values()]
+        multi_counts = [val for val in selected_data.values()]
         multi_years = [years]*len(multi_counts)
-        data = {'counts':multi_counts, 'years': multi_years}
-
+        colors = word_colors[:len(multi_counts)]
+        labels=most_common_words
+        data = {'counts':multi_counts, 'years': multi_years,'colors': colors,
+                'labels': labels}
+        # print(data)
         return ColumnDataSource(data),most_common_words#, ColumnDataSource(country_data)
 
     def update(attr, old, new):
@@ -205,14 +206,7 @@ def country_tab(list_sp_objs):
                 number_of_mentions.append(0)
         return years,number_of_mentions
 
-    def basic_country_stats(pd_df_country,years_array):
-        '''@param pd_df_country: the dataset filtered by the country input
-        @param years_array: depends on input from slider
-        '''
-
-        list_of_sp_objs=list(Speech(row) for idx,row in pd_df_country.iterrows())
-
-    def make_plot(src, selected_countries):
+    def make_plot(src):
         p = figure(plot_width=400, plot_height=400)
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
@@ -249,7 +243,7 @@ def country_tab(list_sp_objs):
 
         return(p)
 
-    country_input = TextInput(value="China", title="Label:")
+    country_input = TextInput(value="India", title="Label:")
     country_input.on_change('value', update)
 
 
@@ -263,16 +257,18 @@ def country_tab(list_sp_objs):
                                 options=list(country_dic.items()))
     multi_select_out.on_change('value', update)
     #
+    word_colors = Category20_16
+    word_colors.sort()
     country_code = list(country_dic.keys())[list(country_dic.values()).index(country_input.value)]
     src,mcw = make_data_set(list_sp_objs, country_code,multi_select_inp.value,multi_select_out.value)
 
-    p = make_plot(src,mcw)
+    p = make_plot(src)
     # Put controls in a single element
     controls = widgetbox(country_input)
-    controls2 = widgetbox(multi_select_inp,multi_select_out)
+    # controls2 = widgetbox(multi_select_inp,multi_select_out)
 
     # Create a row layout
-    layout = row(controls, p, controls2)
+    layout = row(p)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title = 'Most Common words')
