@@ -81,13 +81,6 @@ class Speech(object):
     def get_total_stems(self):
         return len(self.list_of_stems)
 
-    # def get_breakdown(self):
-    #     words = self.filtered_words
-    #     positions = nltk.pos_tag(words)
-    #     unique_positions = set(positions)
-    #
-    #
-    #     return
 
     def replace_long_spaces(self, text):
         return re.sub(r'\s+', ' ', text)
