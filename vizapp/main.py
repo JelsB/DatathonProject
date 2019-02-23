@@ -47,7 +47,7 @@ sample_dataset = dataset[:]
 # speech_objects = make_speeches(sample_dataset)
 # pickle_speeches(speech_objects, './data/UN')
 speech_objects = unpickle_speeches(Path('./data/UN'))
-# print('laoded speeches')
+print('laoded speeches')
 # # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
@@ -58,7 +58,7 @@ tab1 = speech_tab(speech_objects)
 
 # create_dict(list_of_sp_obj)
 # Put all the tabs into one application
-tabs = Tabs(tabs=[tab1])  # , tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
+tabs = Tabs(tabs=[tab1], tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
 
 # Put the tabs in the current document for display
 curdoc().theme = 'light_minimal'

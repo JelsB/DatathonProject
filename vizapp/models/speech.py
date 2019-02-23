@@ -12,6 +12,7 @@ from bokeh.palettes import Viridis256 as palette
 # from .utils import country_dic
 from .utils import country_dic
 from .utils import country_shapes
+from .utils import unique_countries_dic
 
 
 def speech_tab(list_of_sp_obj):
@@ -207,8 +208,8 @@ def speech_tab(list_of_sp_obj):
     text_input.on_change('value', update)
 
     # multi country select
-    multi_select = MultiSelect(title="Countries:", value=['CHN'],
-                               options=list(country_dic.items()))
+    multi_select = MultiSelect(title="Countries:", size=20, value=['CHN'],
+                               options=list(unique_countries_dic.items()))
     multi_select.on_change('value', update)
 
     total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
