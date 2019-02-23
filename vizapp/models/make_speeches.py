@@ -19,8 +19,8 @@ class Speech(object):
         self.number_of_sentences = self.count_sentences()
         self.filtered_words = self.filter_on_stopwords()
         self.word_frequency = self.count_unique_words()
-        self.list_of_stems = self.get_stems()
-        self.number_of_stems = self.get_total_stems()
+        # self.list_of_stems = self.get_stems()
+        # self.number_of_stems = self.get_total_stems()
 
     def get_country(self, df_row):
         cntry = df_row.country
@@ -80,14 +80,6 @@ class Speech(object):
 
     def get_total_stems(self):
         return len(self.list_of_stems)
-
-    # def get_breakdown(self):
-    #     words = self.filtered_words
-    #     positions = nltk.pos_tag(words)
-    #     unique_positions = set(positions)
-    #
-    #
-    #     return
 
     def replace_long_spaces(self, text):
         return re.sub(r'\s+', ' ', text)

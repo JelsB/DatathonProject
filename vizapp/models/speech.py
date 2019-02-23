@@ -1,4 +1,5 @@
 from math import pi
+import numpy as np
 from collections import Counter
 from bokeh.layouts import widgetbox, row, column
 from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
@@ -14,11 +15,12 @@ from bokeh.palettes import Viridis11
 # from .utils import country_dic
 from .utils import country_dic
 from .utils import country_shapes
+from .utils import unique_countries_dic
 
 
 def speech_tab(list_of_sp_obj):
 
-    def make_data_set(speeches, word, selected_countries, show_total):
+    def make_data_set(speeches, word, selected_countries, show_total, selected_years):
         counter = Counter()
         country_counter = Counter()
         dict_of_selected_counters = dict()
@@ -34,15 +36,16 @@ def speech_tab(list_of_sp_obj):
 
         # counts = defaultdict(int)
         for sp in speeches:
-            counter[sp.year] += sp.word_frequency[word]
-            country_counter[sp.country] += sp.word_frequency[word]
+            if selected_years[0] <= sp.year <= selected_years[1]:
+                counter[sp.year] += sp.word_frequency[word]
+                country_counter[sp.country] += sp.word_frequency[word]
 
-            if sp.country in selected_countries:
-                if sp.word_frequency[word]:
-                    add = sp.word_frequency[word]
-                else:
-                    add = 0
-                dict_of_selected_counters[sp.country][sp.year] += add
+                if sp.country in selected_countries:
+                    if sp.word_frequency[word]:
+                        add = sp.word_frequency[word]
+                    else:
+                        add = 0
+                    dict_of_selected_counters[sp.country][sp.year] += add
         # sort by years
         years = []
         counts = []
@@ -123,6 +126,8 @@ def speech_tab(list_of_sp_obj):
 
         for i in range(len(data['country'])):
             try:
+                if data['counts'][i] == 0:
+                    data['counts'][i] = float('NaN')
                 country_rates[country_inds[data['country'][i]]] = data['counts'][i]
             except:
                 pass
@@ -158,6 +163,26 @@ def speech_tab(list_of_sp_obj):
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
                      source=src)
+
+        p.xaxis.axis_label = 'Year'
+        p.yaxis.axis_label = 'Counts'
+        # src.data['year_label'] = src.data['years'][0]
+        # src.data['data_label'] = src.data['counts'][0]
+        # p.add_tools(HoverTool(
+        #     tooltips=[
+        #         ( 'year',   '@year_label'),
+        #         ( 'mentions',  '@data_label' ), # use @{ } for field names with spaces
+        #     ],
+        #
+        #     # formatters={
+        #     #     'date'      : 'datetime', # use 'datetime' formatter for 'date' field
+        #     #     'adj close' : 'printf',   # use 'printf' formatter for 'adj close' field
+        #     #                               # use default 'numeral' formatter for other fields
+        #     # },
+        #
+        #     # display a tooltip whenever the cursor is vertically in line with a glyph
+        #     mode='vline'
+        # ))
         #
         # print(selected_countries)
         # for country in selected_countries:
@@ -184,6 +209,8 @@ def speech_tab(list_of_sp_obj):
         return p
 
     def make_map(src_map):
+
+        # high_col = src_map.data['rate'].np.nanmax()
         color_mapper = LinearColorMapper(palette=palette)
         TOOLS = "pan,wheel_zoom,reset,hover,save"
 
@@ -200,6 +227,10 @@ def speech_tab(list_of_sp_obj):
         p.y_range = Range1d(start=-90, end=90)
 
         p.grid.grid_line_color = None
+        # ticker = BasicTicker()
+        color_bar = ColorBar(color_mapper=color_mapper,
+                             ticker=BasicTicker(), label_standoff=10)
+        p.add_layout(color_bar, 'right')
 
         p.patches('x', 'y', source=src_map,
                   fill_color={'field': 'rate', 'transform': color_mapper},
@@ -226,15 +257,26 @@ def speech_tab(list_of_sp_obj):
 
         return p
 
+    def make_flamingo(url):
+        p = figure(x_range=(0, 100), y_range=(0, 100), plot_width=80,
+                   plot_height=270,
+                   toolbar_location=None, title=None)
+
+        p.image_url(url=[url], x=0, y=30,
+                    w=100, h=20)
+        p.axis.visible = False
+        p.grid.visible = False
+        p.outline_line_color = None
+        return(p)
 
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
-         pie_src_new, map_src_new,
-         new_bar_src) = make_data_set(list_of_sp_obj,
-                                       text_input.value,
-                                       multi_select.value,
-                                       total_box.active)
+         pie_src_new, map_src_new) = make_data_set(list_of_sp_obj,
+                                                   text_input.value,
+                                                   multi_select.value,
+                                                   total_box.active,
+                                                   range_slider.value)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
@@ -254,26 +296,32 @@ def speech_tab(list_of_sp_obj):
     text_input.on_change('value', update)
 
     # multi country select
-    multi_select = MultiSelect(title="Countries:", value=['CHN'],
-                               options=list(country_dic.items()))
+    multi_select = MultiSelect(title="Countries:", size=20, value=['CHN'],
+                               options=list(unique_countries_dic.items()))
     multi_select.on_change('value', update)
 
     total_box = CheckboxGroup(labels=['Show Total'], active=[0, 1])
     total_box.on_change('active', update)
 
+    range_slider = RangeSlider(start=1970, end=2015, value=(1970, 2015), step=1., title="Years")
+    range_slider.on_change('value', update)
+    src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
+                                          multi_select.value, total_box.active,range_slider.value)
     src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
                                           multi_select.value, total_box.active)
-
     p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     map = make_map(map_src)
     bar = make_bar_plot(bar_src)
 
+    url = ('https://cdn5.vectorstock.com/i/thumb-large/12/79/cartoon-flamingo-vector-5151279.jpg')
+    flamingo = make_flamingo(url)
+
     # Put controls in a single element
-    controls = widgetbox(text_input, total_box, multi_select)
+    controls = widgetbox(text_input, total_box, multi_select, range_slider)
 
     # Create a row layout
-    layout = row(controls, column(p, pie, bar), map)
+    layout = row(column(controls, flamingo), column(p, bar), map)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title='Word frequency')
