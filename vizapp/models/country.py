@@ -1,12 +1,14 @@
 import re
 from collections import Counter
 from bokeh.layouts import widgetbox, row
-from bokeh.models.widgets import TextInput
+from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel
 from bokeh.palettes import Category20c
 from bokeh.transform import cumsum
 from .make_speeches import Speech
+from pathlib import Path
+import pickle
 
 from .utils import country_dic
 
@@ -56,32 +58,39 @@ def country_tab(list_sp_objs):
         overall_counter = Counter()
         word_counter = dict()
 
-        dict_of_selected_counters_inp = search_mentions(selected_countries_inp)
-        dict_of_selected_counters_out = search_is_mentioned_by(selected_countries_out)
+        dict_of_selected_counters_inp = search_mentions(selected_countries_inp,selected_countries_out)
+        dict_of_selected_counters_out = search_is_mentioned_by(selected_countries_inp,selected_countries_out)
         tot_mentions = dict()
         tot_mentioned_by = dict()
 
         for i in selected_countries_inp:
             tot_mentions[i]=dict()
-            for k,val in selected_countries_inp[i].items():
-                tot_mentions[i][k] = sum(val[1])
+            # for k,val in dict_of_selected_counters_inp[i].items():
+                # print(val[1])
+                # tot_mentions[i][k] = sum(val[1])
 
         for o in selected_countries_out:
             tot_mentioned_by[o]=dict()
-            for k,val in selected_countries_out[i].items():
-                tot_mentioned_by[i][k] = sum(val[1])
+            # for k,val in dict_of_selected_counters_out[i].items():
+                # tot_mentioned_by[i][k] = sum(val[1])
 
-        sp_country = speeches[s for s in speeches if s.country==country]
+        sp_country=[]
+        for s in speeches:
+            if s.country==country:
+                sp_country.append(s)
+
+        # sp_country = speeches[idx]
         # counts = defaultdict(int)
-        for sp in sp_country:
+        for sp in list(sp_country):
             overall_counter += sp.word_frequency
 
-        most_common_words = list(overall_counter.most_common(10).keys())
+        most_common_words = list(dict(overall_counter.most_common(10)).keys())
+        print(most_common_words)
         # for sp in sp_country:
         #     counter[sp.year] += sp.word_frequency[word]
 
         for w in most_common_words:
-            word_counter[w]=dict()
+            word_counter[w]=Counter()
             for sp in sp_country:
                 if sp.word_frequency[w]:
                     add=sp.word_frequency[w]
@@ -93,7 +102,7 @@ def country_tab(list_sp_objs):
         years = []
         counts = []
 
-        for yr, cnt in sorted(overall_counter.most_common(10).items()):
+        for yr, cnt in sorted(dict(overall_counter.most_common(10)).items()):
             years.append(yr)
             counts.append(cnt)
 
@@ -116,13 +125,11 @@ def country_tab(list_sp_objs):
 
     def update(attr, old, new):
         print('updating',multi_select_inp.value)
-        country_code = list(country_dic.keys())[list(country_dic.values()).index(country_input.value)]
         (word_frequency_to_plot,
-        pie_src_new) = make_data_set(list_sp_objs,
+        most_com_words) = make_data_set(list_sp_objs,
                                     country_code,multi_select_inp.value,multi_select_out.value)
         # print(country_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
-        pie_src.data.update(pie_src_new.data)
 
     def search_mentions(input_countries,output_countries):
         '''Input countries: ['USA','CHN']
@@ -138,12 +145,6 @@ def country_tab(list_sp_objs):
           '''
         specific_mentions_dict=dict()
         for i in input_countries:
-            try:
-                dict_of_int = mentions_dict[i]
-            except KeyError:
-                #Do something, this is temporary
-                print("Invalid country, next one...")
-                continue
             specific_mentions_dict[i]=dict()
             for o in output_countries:
                 years,mentions = yearwise_data(i,o,'mentions')
@@ -164,12 +165,6 @@ def country_tab(list_sp_objs):
           '''
         specific_mentioned_by_dict=dict()
         for i in input_countries:
-            try:
-                dict_of_int = mentions_dict[i]
-            except KeyError:
-                #Do something, this is temporary
-                print("Invalid country, next one...")
-                continue
             specific_mentioned_by_dict[i]=dict()
             for o in output_countries:
                 years,mentions = yearwise_data(i,o,'is_mentioned_by')
@@ -200,10 +195,10 @@ def country_tab(list_sp_objs):
             except KeyError:
                 print("Check the country again!")
                 return None,None
-        years = list(dict_of_int.keys()).sort()
+        years = sorted(list(dict_of_int.keys()))
         number_of_mentions=[]
         for y in years:
-            mentions = [x for x in dict_searched_country[y] if x[0]==out_country]
+            mentions = [x for x in dict_of_int[y] if x[0]==out_country]
             if len(mentions):
                 number_of_mentions.append(mentions[0])
             else:
@@ -217,17 +212,42 @@ def country_tab(list_sp_objs):
 
         list_of_sp_objs=list(Speech(row) for idx,row in pd_df_country.iterrows())
 
-    def make_plot(src, words):
+    def make_plot(src, selected_countries):
         p = figure(plot_width=400, plot_height=400)
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
-        p.multi_line('years', 'counts', color='colors', legend='labels', source=src)
-         #
+        p.multi_line('years', 'counts', color='colors', legend='labels',
+                     source=src)
+        #
         # print(selected_countries)
         # for country in selected_countries:
         #     p.line('years', country, source=src)
 
         return p
+
+    def make_map(src_map):
+        color_mapper = LogColorMapper(palette=palette)
+        TOOLS = "pan,wheel_zoom,reset,hover,save"
+
+        p = figure(plot_width=1150, plot_height=800,
+                   title="World map", tools=TOOLS,
+                   x_axis_location=None, y_axis_location=None,
+                   tooltips=[
+                       ("Name", "@name"), ("Mentions", "@rate")  # ,
+                       # ("(Long, Lat)", "($x, $y)")
+                   ])
+        p.grid.grid_line_color = None
+        p.hover.point_policy = "follow_mouse"
+        p.x_range = Range1d(start=-180, end=180)
+        p.y_range = Range1d(start=-90, end=90)
+
+        p.grid.grid_line_color = None
+
+        p.patches('x', 'y', source=src_map,
+                  fill_color={'field': 'rate', 'transform': color_mapper},
+                  fill_alpha=0.7, line_color="white", line_width=0.5)
+
+        return(p)
 
     country_input = TextInput(value="China", title="Label:")
     country_input.on_change('value', update)
@@ -243,16 +263,16 @@ def country_tab(list_sp_objs):
                                 options=list(country_dic.items()))
     multi_select_out.on_change('value', update)
     #
-
-    src,mcw = make_data_set(list_sp_objs, country_input.value,multi_select_inp.value,multi_select_out.value)
+    country_code = list(country_dic.keys())[list(country_dic.values()).index(country_input.value)]
+    src,mcw = make_data_set(list_sp_objs, country_code,multi_select_inp.value,multi_select_out.value)
 
     p = make_plot(src,mcw)
     # Put controls in a single element
     controls = widgetbox(country_input)
-
+    controls2 = widgetbox(multi_select_inp,multi_select_out)
 
     # Create a row layout
-    layout = row(controls, p)
+    layout = row(controls, p, controls2)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title = 'Most Common words')
