@@ -4,31 +4,38 @@ import pandas as pd
 # os methods for manipulating paths
 from pathlib import Path
 
-#pickle for the dictionary
+# pickle for the dictionary
 import pickle
 
 # Bokeh basics
 from bokeh.io import curdoc
 from bokeh.models.widgets import Tabs
-
+from bokeh.themes import built_in_themes
 
 # Each tab is drawn by one script
-from models.make_speeches import make_speeches
+from models.make_speeches import make_speeches, pickle_speeches, unpickle_speeches
 from models.speech import speech_tab
+<<<<<<< HEAD
 from models.country import country_tab
+=======
+# from models.country import create_dict
+>>>>>>> cc7fa2ce6cfa39009eb78d83f5bd2a1225630417
 from models.full_text import text_tab
 
 
 # Using included state data from Bokeh for map
 from bokeh.sampledata.us_states import data as states
 
+
+
+
 # Read data into dataframes
 filename = Path('./data/UN/un-general-debates.csv')
-#Load in the data and print the column names
+# Load in the data and print the column names
 dataset = pd.read_csv(filename)
 raw_speeches = dataset.text
-sample_raw_speeches = raw_speeches[:100]
-sample_dataset = dataset[:500]
+# sample_raw_speeches = raw_speeches[:100]
+sample_dataset = dataset[:]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
@@ -40,9 +47,12 @@ sample_dataset = dataset[:500]
 # Formatted Flight Delay Data for map
 # map_data = pd.read_csv(join(dirname(__file__), 'data', 'flights_map.csv'),
 #                             header=[0,1], index_col=0)
-speech_objects = make_speeches(sample_dataset)
 
-# Create each of the tabs
+# speech_objects = make_speeches(sample_dataset)
+# pickle_speeches(speech_objects, './data/UN')
+speech_objects = unpickle_speeches(Path('./data/UN'))
+print('laoded speeches')
+# # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
 tab2 = country_tab(speech_objects)
@@ -52,7 +62,12 @@ tab3 = text_tab(speech_objects)
 
 # create_dict(list_of_sp_obj)
 # Put all the tabs into one application
+<<<<<<< HEAD
 tabs = Tabs(tabs = [tab1, tab2, tab3])#, tab2, tab3, tab4, tab5])
+=======
+tabs = Tabs(tabs=[tab1, tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
+>>>>>>> cc7fa2ce6cfa39009eb78d83f5bd2a1225630417
 
 # Put the tabs in the current document for display
+curdoc().theme = 'light_minimal'
 curdoc().add_root(tabs)

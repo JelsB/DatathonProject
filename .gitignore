@@ -1,4 +1,3 @@
-**data/UN/**
 **/out*/*
 **/input/*
 *_loc*
@@ -9,3 +8,5 @@
 .ipynb*/
 *.html
 .DS_Store
+*pickle
+data/*
