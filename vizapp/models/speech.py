@@ -6,8 +6,8 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
 from bokeh.palettes import Category20c, Category20_16
 from bokeh.transform import cumsum
-from bokeh.models import LogColorMapper
-from bokeh.palettes import Viridis6 as palette
+from bokeh.models import LogColorMapper, LinearColorMapper
+from bokeh.palettes import Viridis256 as palette
 
 # from .utils import country_dic
 from .utils import country_dic
@@ -165,7 +165,7 @@ def speech_tab(list_of_sp_obj):
         return p
 
     def make_map(src_map):
-        color_mapper = LogColorMapper(palette=palette)
+        color_mapper = LinearColorMapper(palette=palette)
         TOOLS = "pan,wheel_zoom,reset,hover,save"
 
         p = figure(plot_width=1150, plot_height=800,
