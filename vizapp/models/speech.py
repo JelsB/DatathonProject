@@ -140,6 +140,8 @@ def speech_tab(list_of_sp_obj):
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
                      source=src)
+        p.xaxis.axis_label = 'Year'
+        p.yaxis.axis_label = 'Counts'
         #
         # print(selected_countries)
         # for country in selected_countries:
