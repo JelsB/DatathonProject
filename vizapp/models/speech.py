@@ -2,7 +2,7 @@ from math import pi
 import numpy as np
 from collections import Counter
 from bokeh.layouts import widgetbox, row, column
-from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup
+from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup, RangeSlider
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d, FactorRange
 from bokeh.palettes import Category20c, Category20_16
@@ -11,6 +11,7 @@ from bokeh.models import LogColorMapper, LinearColorMapper
 from bokeh.palettes import Viridis256 as palette
 from bokeh.models.glyphs import VBar
 from bokeh.palettes import Viridis11
+from bokeh.models import ColorBar, LinearColorMapper, HoverTool, BasicTicker
 
 # from .utils import country_dic
 from .utils import country_dic
@@ -242,7 +243,7 @@ def speech_tab(list_of_sp_obj):
     def make_bar_plot(src):
         r_range = FactorRange(factors=src.data['country'])
         # src.data['country']
-        p = figure(x_range=r_range, plot_height=350, title="Fruit Counts",
+        p = figure(x_range=r_range, plot_height=350, title="Word Counts",
                     toolbar_location=None, tools="")
 
         # glyph = VBar(x='country', top='counts', bottom=0, width=.8,
@@ -252,7 +253,7 @@ def speech_tab(list_of_sp_obj):
         #         fill_color=factor_cmap('country', palette=palette, factors=src.data['country']),
         #         legend="country", source=src)
         p.vbar(x='country', top='counts', bottom=0, width=.8,
-            fill_color=Viridis11[0],
+            fill_color=Viridis11[-1],
                  source=src)
 
         return p
@@ -272,7 +273,7 @@ def speech_tab(list_of_sp_obj):
     def update(attr, old, new):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
-         pie_src_new, map_src_new) = make_data_set(list_of_sp_obj,
+         pie_src_new, map_src_new, new_bar_src) = make_data_set(list_of_sp_obj,
                                                    text_input.value,
                                                    multi_select.value,
                                                    total_box.active,
@@ -307,8 +308,8 @@ def speech_tab(list_of_sp_obj):
     range_slider.on_change('value', update)
     src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
                                           multi_select.value, total_box.active,range_slider.value)
-    src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
-                                          multi_select.value, total_box.active)
+    # src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
+    #                                       multi_select.value, total_box.active)
     p = make_plot(src, multi_select.value)
     pie = make_pie_plot(pie_src)
     map = make_map(map_src)
