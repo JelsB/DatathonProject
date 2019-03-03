@@ -1,4 +1,3 @@
-**data/
 **/out*/*
 **/input/*
 *_loc*
@@ -8,5 +7,6 @@
 !/references/README
 .ipynb*/
 *.html
-data*/
 .DS_Store
+*pickle
+data/*
