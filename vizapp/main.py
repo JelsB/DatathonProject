@@ -17,6 +17,7 @@ from models.make_speeches import make_speeches, pickle_speeches, unpickle_speech
 from models.speech import speech_tab
 # from models.country import create_dict
 from models.full_text import text_tab
+from models.country import country_tab
 
 
 # Using included state data from Bokeh for map
@@ -51,7 +52,7 @@ print('laoded speeches')
 # # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
-tab2 = country_tab(speech_objects)
+# tab2 = country_tab(speech_objects)
 tab3 = text_tab(speech_objects)
 # tab4 = map_tab(speech_objects)
 # tab5 = route_tab(flights)
