@@ -27,12 +27,12 @@ from bokeh.sampledata.us_states import data as states
 
 
 # Read data into dataframes
-filename = Path('./data/UN/un-general-debates.csv')
+# filename = Path('./data/UN/un-general-debates.csv')
 # Load in the data and print the column names
-dataset = pd.read_csv(filename)
-raw_speeches = dataset.text
+# dataset = pd.read_csv(filename)
+# raw_speeches = dataset.text
 # sample_raw_speeches = raw_speeches[:100]
-sample_dataset = dataset[:]
+# sample_dataset = dataset[:]
 # print(raw_speeches)
 # flights = pd.read_csv(join(dirname(__file__), 'data', 'flights.csv'),
 # 	                                          index_col=0).dropna()
@@ -47,9 +47,13 @@ sample_dataset = dataset[:]
 
 # speech_objects = make_speeches(sample_dataset)
 # pickle_speeches(speech_objects, './data/UN')
+
+
+
 speech_objects = unpickle_speeches(Path('./data/UN'))
-print('laoded speeches')
-# # Create each of the tabs
+print('loaded speeches')
+
+# # # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
 # tab2 = country_tab(speech_objects)
