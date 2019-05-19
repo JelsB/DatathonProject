@@ -3,8 +3,10 @@ import nltk
 import pickle
 from collections import Counter
 
+
 class Speech(object):
     """docstring for Speech."""
+
     def __init__(self, df_row):
         super(Speech, self).__init__()
         self.year = df_row.year
@@ -32,7 +34,7 @@ class Speech(object):
         return len(self.list_of_words)
 
     def get_average_word_length(self):
-        return sum([len(word) for word in self.list_of_words])/self.number_of_words
+        return sum([len(word) for word in self.list_of_words]) / self.number_of_words
 
     def count_sentences(self):
         """Count punctuations"""
@@ -87,17 +89,17 @@ class Speech(object):
     def remove_newline(self, text):
         return re.sub(r'\n+\s+', ' ', text)
 
-    def remove_linenumber(self,text):
-        return re.sub(r'[\n[0-9]+\.|^[0-9]+\.]','\n',text)
+    def remove_linenumber(self, text):
+        return re.sub(r'[\n[0-9]+\.|^[0-9]+\.]', '\n', text)
 
-    def remove_trailing_and_leading_quote(self,text):
-        return re.sub(r'[\'\n|\n\'|\' | \']','\n',text)
+    def remove_trailing_and_leading_quote(self, text):
+        return re.sub(r'[\'\n|\n\'|\' | \']', '\n', text)
 
-    def remove_parentheses(self,text):
-        return re.sub(r'\n\(.\)','\n',text)
+    def remove_parentheses(self, text):
+        return re.sub(r'\n\(.\)', '\n', text)
 
-    def remove_common(self,text):
-        return re.sub(r'[:|;|?|!|\.|,|\t]',' ',text)
+    def remove_common(self, text):
+        return re.sub(r'[:|;|?|!|\.|,|\t]', ' ', text)
 
     def clean_text_keep_punctuation(self):
         text = self.text
@@ -114,7 +116,6 @@ class Speech(object):
         text = self.replace_long_spaces(text)
         return text
 
-
     def get_words(self):
         list_of_words = nltk.tokenize.word_tokenize(self.cleaned_text)
 
@@ -122,12 +123,10 @@ class Speech(object):
         list_of_words = list(filter(None, list_of_words))
         return list_of_words
 
-
     def pickle_self(self, dir):
         with open(f'{dir}/{self.country}_{self.year}.pickle', 'wb') as file:
             pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
             print(f'dumped pickle in {dir} {self.country}_{self.year}')
-
 
 
 def make_speeches(pd_df):
