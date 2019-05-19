@@ -24,8 +24,6 @@ from models.country import country_tab
 from bokeh.sampledata.us_states import data as states
 
 
-
-
 # Read data into dataframes
 # filename = Path('./data/UN/un-general-debates.csv')
 # Load in the data and print the column names
@@ -49,21 +47,20 @@ from bokeh.sampledata.us_states import data as states
 # pickle_speeches(speech_objects, './data/UN')
 
 
-
 speech_objects = unpickle_speeches(Path('./data/UN'))
 print('loaded speeches')
 
 # # # Create each of the tabs
 tab1 = speech_tab(speech_objects)
 
-# tab2 = country_tab(speech_objects)
+tab2 = country_tab(speech_objects)
 tab3 = text_tab(speech_objects)
 # tab4 = map_tab(speech_objects)
 # tab5 = route_tab(flights)
 
 # create_dict(list_of_sp_obj)
 # Put all the tabs into one application
-tabs = Tabs(tabs=[tab1, tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
+tabs = Tabs(tabs=[tab1, tab2, tab3])  # , tab4])#, tab2, tab3, tab4, tab5])
 
 # Put the tabs in the current document for display
 curdoc().theme = 'light_minimal'
