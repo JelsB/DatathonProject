@@ -12,14 +12,14 @@ class Speech(object):
         self.year = df_row.year
         self.country = self.get_country(df_row)
         self.session = df_row.session
-        self.text = df_row.text
-        self.cleaned_sentences = self.clean_text_keep_punctuation()
-        self.cleaned_text = self.clean_text_remove_punctuation()
+        # self.text = df_row.text
+        self.cleaned_sentences = self.clean_text_keep_punctuation(df_row.text)
+        # self.cleaned_text = self.clean_text_remove_punctuation()
         self.list_of_words = self.get_words()
         self.number_of_words = self.count_total_words()
         self.average_word_length = self.get_average_word_length()
         self.number_of_sentences = self.count_sentences()
-        self.filtered_words = self.filter_on_stopwords()
+        # self.filtered_words = self.filter_on_stopwords()
         self.word_frequency = self.count_unique_words()
         # self.list_of_stems = self.get_stems()
         # self.number_of_stems = self.get_total_stems()
@@ -52,7 +52,7 @@ class Speech(object):
         Counter({'a': 2, 'rr': 2, 'b': 1, 'c': 1})
 
         """
-        return Counter(self.filtered_words)
+        return Counter(self.filter_on_stopwords())
 
     def most_used_words(self, show=10):
         """Return sorted list of tuples with word and frequency
@@ -72,7 +72,8 @@ class Speech(object):
         return filtered_words
 
     def get_stems(self):
-        words = self.filtered_words
+        # words = self.filtered_words
+        words = self.word_frequency.keys()
         stemmed_words = []
         stemmer = nltk.stem.PorterStemmer()
         for w in words:
@@ -101,8 +102,8 @@ class Speech(object):
     def remove_common(self, text):
         return re.sub(r'[:|;|?|!|\.|,|\t]', ' ', text)
 
-    def clean_text_keep_punctuation(self):
-        text = self.text
+    def clean_text_keep_punctuation(self, text):
+        # text = self.text
         text = self.remove_linenumber(text)
         text = self.remove_trailing_and_leading_quote(text)
         text = self.remove_parentheses(text)
@@ -117,7 +118,8 @@ class Speech(object):
         return text
 
     def get_words(self):
-        list_of_words = nltk.tokenize.word_tokenize(self.cleaned_text)
+        text = self.clean_text_remove_punctuation()
+        list_of_words = nltk.tokenize.word_tokenize(text)
 
         # remove leftover empty elements
         list_of_words = list(filter(None, list_of_words))
@@ -153,3 +155,17 @@ def unpickle_speeches(pickle_dir):
 def pickle_speeches(list_of_sp_obj, dir):
     for sp in list_of_sp_obj:
         sp.pickle_self(dir)
+
+
+def pickle_list_of_speeches(obj, dir):
+    with open(f'{dir}/all_speeches.pickle', 'wb') as file:
+        pickle.dump(obj, file, pickle.HIGHEST_PROTOCOL)
+        print(f'Dumped pickle all speeches in {dir}')
+
+
+def unpickle_list_of_speeches(pickle_file):
+    with pickle_file.open('rb') as file:
+        obj = pickle.load(file)
+        print(f'Loaded pickled speeches.')
+
+    return obj
