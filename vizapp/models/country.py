@@ -135,12 +135,13 @@ def country_tab(list_sp_objs):
         return dict_of_int
 
     def make_plot(src):
-        p = figure(plot_height=600)
+        p = figure(plot_height=600, title='Most used words')
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
                      source=src)
-        #
+        p.xaxis.axis_label = 'Year'
+        p.yaxis.axis_label = 'Word count'
         # print(selected_countries)
         # for country in selected_countries:
         #     p.line('years', country, source=src)
