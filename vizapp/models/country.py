@@ -21,6 +21,7 @@ list_country_codes = list(country_dic.keys())
 dict_mentions = dict()
 dict_is_mentioned_by = dict()
 
+
 def create_dict(list_of_sp_obj):
 
     def find_country_in_text(sp_obj):
@@ -273,6 +274,6 @@ def country_tab(list_sp_objs):
     layout = row(column(controls, dropdown), map)
 
     # Make a tab with the layout
-    tab = Panel(child=layout, title='Most Common words')
+    tab = Panel(child=layout, title='Country referencing')
 
     return tab
