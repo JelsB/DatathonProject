@@ -1,87 +1,39 @@
 import re
+import pickle
 from collections import Counter
+from pathlib import Path
 from bokeh.layouts import widgetbox, row, column
-from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup, Dropdown
+from bokeh.models.widgets import TextInput, Dropdown
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
-from bokeh.palettes import Category20c, Category20_16
-from bokeh.io import output_file, show
-from bokeh.transform import cumsum
-from .make_speeches import Speech
-from pathlib import Path
-import pickle
+from bokeh.palettes import Category20_16
 from bokeh.models import LogColorMapper
 from bokeh.palettes import Viridis6 as palette
-
-
 from .utils import country_shapes
 from .utils import country_dic
 
 list_country_codes = list(country_dic.keys())
-dict_mentions = dict()
-dict_is_mentioned_by = dict()
-
-def create_dict(list_of_sp_obj):
-
-    def find_country_in_text(sp_obj):
-        for country_abbr,country_name in country_dic.items():
-            if country_name in sp_obj.word_frequency.keys():
-                try:
-                    x= dict_mentions[sp_obj.country]
-                except KeyError:
-                    dict_mentions[sp_obj.country] = dict()
-                print(f'Sp obj country name {sp_obj.country}')
-                if sp_obj.year in dict_mentions[sp_obj.country]:
-                    dict_mentions[sp_obj.country][sp_obj.year].append([country_abbr,sp_obj.word_frequency[country_name]])
-                else:
-                    dict_mentions[sp_obj.country][sp_obj.year] = [[country_abbr,sp_obj.word_frequency[country_name]]]
-
-                try:
-                    x= dict_is_mentioned_by[country_abbr]
-                except KeyError:
-                    dict_is_mentioned_by[country_abbr] = dict()
-                print(f'Country name: {country_name} and abbr {country_abbr}')
-                print(f'Sp obj country name {sp_obj.country}')
-                if sp_obj.year in dict_is_mentioned_by[country_abbr]:
-                    dict_is_mentioned_by[country_abbr][sp_obj.year].append([sp_obj.country,sp_obj.word_frequency[country_name]])
-                else:
-                    dict_is_mentioned_by[country_abbr][sp_obj.year] = [[sp_obj.country,sp_obj.word_frequency[country_name]]]
-
-    for sp in list_of_sp_obj:
-        find_country_in_text(sp)
-    with open('mentions.pickle', 'wb') as handle:
-        print('Saving "Mentions" dictionary')
-        pickle.dump(dict_mentions, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open('is_mentioned_by.pickle','wb') as handles:
-        print('Saving "Is Mentioned By" dictionary')
-        pickle.dump(dict_is_mentioned_by, handles, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def country_tab(list_sp_objs):
 
     def make_data_set(speeches, country, type_display):
-        counter = Counter()
         overall_counter = Counter()
         word_counter = dict()
-
         dict_of_selected_counters_inp = search_mentions(country)
         dict_of_selected_counters_out = search_is_mentioned_by(country)
-        tot_mentions=dict()
-        tot_mentioned_by = dict()
+        tot_mentions = Counter()
+        tot_mentioned_by = Counter()
 
-        tot_mentions=dict()
-        for k,val in dict_of_selected_counters_inp[country].items():
-            tot_mentions[k] = sum(val[1])
-        print(tot_mentions)
+        for k, val in dict_of_selected_counters_inp.items():
+            tot_mentions += Counter(dict(dict_of_selected_counters_inp[k]))
 
+        for k, val in dict_of_selected_counters_inp.items():
+            tot_mentioned_by += Counter(dict(dict_of_selected_counters_out[k]))
 
-        tot_mentioned_by=dict()
-        for k,val in dict_of_selected_counters_out[country].items():
-            tot_mentioned_by[k] = sum(val[1])
-
-        sp_country=[]
+        sp_country = []
         for s in speeches:
-            if s.country==country:
+            if s.country == country:
                 sp_country.append(s)
 
         # sp_country = speeches[idx]
@@ -95,20 +47,17 @@ def country_tab(list_sp_objs):
             most_common_counter[mcw] = overall_counter[mcw]
         word = list(dict(most_common_counter).keys())
         counts = list(dict(most_common_counter).values())
-        # for sp in sp_country:
-        #     counter[sp.year] += sp.word_frequency[word]
 
         for w in most_common_words:
-            word_counter[w]=Counter()
+            word_counter[w] = Counter()
             for sp in sp_country:
                 if sp.word_frequency[w]:
-                    add=sp.word_frequency[w]
+                    add = sp.word_frequency[w]
                 else:
                     add = 0
                 word_counter[w][sp.year] += add
 
-
-        years = range(1970,2016,1)
+        years = range(1970, 2016, 1)
         selected_data = dict()
         for w, cnter in word_counter.items():
             selected_data[w] = []
@@ -121,68 +70,41 @@ def country_tab(list_sp_objs):
         # print(selected_data)
 
         multi_counts = [val for val in selected_data.values()]
-        multi_years = [years]*len(multi_counts)
+        multi_years = [list(years)] * len(multi_counts)
         colors = word_colors[:len(multi_counts)]
-        labels=most_common_words
-        data = {'counts':multi_counts, 'years': multi_years,'colors': colors,
+        labels = most_common_words
+        data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
                 'labels': labels}
-        print(data)
-        if type_display=='mentions':
+
+        if type_display == 'mentions':
             prepared_map_data = make_map_data(tot_mentions)
         else:
             prepared_map_data = make_map_data(tot_mentioned_by)
-        # print(data)
+
         return ColumnDataSource(data), ColumnDataSource(prepared_map_data)
 
     def update(attr, old, new):
-        print('updating ',dropdown.value)
+        country_code = list(country_dic.keys())[list(
+            country_dic.values()).index(country_input.value)]
+        # print('updating ', country_input.value, country_code, dropdown.value)
         (word_frequency_to_plot,
-        map_data) = make_data_set(list_sp_objs,
-                                    country_code,dropdown.value)
+         map_data) = make_data_set(list_sp_objs,
+                                   country_code, dropdown.value)
         # print(country_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         map_src.data.update(map_data.data)
 
-    def search_mentions(input_country,output_countries=list_country_codes):
-        '''Input countries: ['USA','CHN']
-           Output countries: ['IND','PAK','COL']
-           number of times input countries mention output countries
-           returns a dict of dicts.
-           ex: {'USA':{'IND':[[1989,1990,1995],[2,3,4],
-                    'PAK':[[1975,1988,1999,2012],[1,2,3,1]],
-                    'COL':[[2000,2001],[1,4]]},
-                'CHN':{'IND':[[1979,1996,2010],[1,2,4]],
-                         'PAK':[[1975,1988,1999,2012],[1,2,3,1]],
-                         'COL':[[2000,2001],[1,4]]}}
-          '''
-        specific_mentions_dict=dict()
-        specific_mentions_dict[input_country]=dict()
-        for o in output_countries:
-            years,mentions = yearwise_data(input_country,o,'mentions')
-            specific_mentions_dict[input_country][o]=[years,mentions]
+    def search_mentions(input_country, output_countries=list_country_codes):
+        specific_mentions_dict = yearwise_data(input_country, 'mentions')
+
         return specific_mentions_dict
 
-    def search_is_mentioned_by(input_country,output_countries=list_country_codes):
-        '''Input countries: ['USA','CHN']
-           Output countries: ['IND','PAK','COL']
-           number of times input countries are mentioned by output countries
-           returns a dict of dicts.
-           ex: {'USA':{'IND':[[1989,1990,1995],[2,3,4],
-                    'PAK':[[1975,1988,1999,2012],[1,2,3,1]],
-                    'COL':[[2000,2001],[1,4]]},
-                'CHN':{'IND':[[1979,1996,2010],[1,2,4]],
-                         'PAK':[[1975,1988,1999,2012],[1,2,3,1]],
-                         'COL':[[2000,2001],[1,4]]}}
-          '''
-        specific_mentioned_by_dict=dict()
-        specific_mentioned_by_dict[input_country]=dict()
-        for o in output_countries:
-            years,mentions = yearwise_data(input_country,o,'is_mentioned_by')
-            specific_mentioned_by_dict[input_country][o]=[years,mentions]
+    def search_is_mentioned_by(input_country, output_countries=list_country_codes):
+        specific_mentioned_by_dict = yearwise_data(input_country, 'is_mentioned_by')
+
         return specific_mentioned_by_dict
 
-
-    def yearwise_data(inp_country, out_country,m):
+    def yearwise_data(inp_country, m):
         '''Function to get yearly data on either mentions or is mentioned by
         data for a specific country.
         @param inp_country: country input.
@@ -199,30 +121,27 @@ def country_tab(list_sp_objs):
         '''
         # [x for x in dict_searched_country[1989] if x[0]=='COL']
         # print(inp_country,out_country,m)
-        with open(Path(f'{m}.pickle'), 'rb') as pkl_file:
+        input_file = Path.cwd().joinpath(f'data/{m}.pickle')
+        # Path.cwd().joinpath('data/members_dic.pkl')
+
+        with input_file.open('rb') as pkl_file:
             dict = pickle.load(pkl_file)
             try:
                 dict_of_int = dict[inp_country]
             except KeyError:
                 print("Check the country again!")
-                return None,None
-        years = sorted(list(dict_of_int.keys()))
-        number_of_mentions=[]
-        yrs =[]
-        for y in years:
-            mentions = [x for x in dict_of_int[y] if x[0]==out_country]
-            if len(mentions):
-                number_of_mentions.append(mentions[0][1])
-                yrs.append(y)
-        return yrs,number_of_mentions
+                return None, None
+
+        return dict_of_int
 
     def make_plot(src):
-        p = figure(plot_width=400, plot_height=400)
+        p = figure(plot_height=600, title='Most used words')
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
                      source=src)
-        #
+        p.xaxis.axis_label = 'Year'
+        p.yaxis.axis_label = 'Word count'
         # print(selected_countries)
         # for country in selected_countries:
         #     p.line('years', country, source=src)
@@ -230,16 +149,10 @@ def country_tab(list_sp_objs):
         return p
 
     def make_map_data(country_counter1):
-        #1 A mentions B , 2 A is mentioned by B
-        # country1 = list(country_counter1.keys())[0]
-        # country2 = list(country_counter1[country1].keys())[0]
-        # print(country1,country2)
-        # print(country_counter2)
-        # count1 = country_counter1[country1][country2]
-        # count2 = country_counter2[country1][country2]
+        # 1 A mentions B , 2 A is mentioned by B
         unzipped = list(zip(*country_counter1))
-        countries = list(unzipped[0])
-        country_counts = list(unzipped[1])
+        countries = list(dict(country_counter1).keys())
+        country_counts = list(dict(country_counter1).values())
 
         data = dict()
         data['country'] = countries
@@ -251,7 +164,7 @@ def country_tab(list_sp_objs):
         country_names = [country_shapes[i]['name'] for i in k]
         # country_rates = list(range(len(country_names)))
 
-        country_rates = [float('NaN')]*len(country_names)
+        country_rates = [float('NaN')] * len(country_names)
         country_inds = {country_shapes[j]['ID']: i for i, j in enumerate(k)}
 
         for i in range(len(data['country'])):
@@ -269,7 +182,7 @@ def country_tab(list_sp_objs):
 
         return src_map
 
-    def make_map(src_map,country,type_display):
+    def make_map(src_map, country, type_display):
         color_mapper = LogColorMapper(palette=palette)
         TOOLS = "pan,wheel_zoom,reset,hover,save"
 
@@ -294,40 +207,28 @@ def country_tab(list_sp_objs):
         return(p)
 
     country_input = TextInput(value="India", title="Label:")
+    country_code = list(country_dic.keys())[list(country_dic.values()).index(country_input.value)]
     country_input.on_change('value', update)
 
-
-    # multi country select
-    # multi_select_inp = MultiSelect(title="Countries of interest:", value=['CHN'],
-    #                             options=list(country_dic.items()))
-    # multi_select_inp.on_change('value', update)
-    # #
-    # # multi country select
-    # multi_select_out = MultiSelect(title="Countries they mention:", value=['IND'],
-    #                             options=list(country_dic.items()))
-    # multi_select_out.on_change('value', update)
-    #
-    #For the dropdown
+    # For the dropdown
     menu = [("Mentions", "mentions"), ("Is mentioned by", "is_mentioned_by")]
-    dropdown = Dropdown(label="Type of display", button_type="primary",value='mentions', menu=menu)
+    dropdown = Dropdown(label="Type of display", button_type="primary", value='mentions', menu=menu)
     dropdown.on_change('value', update)
 
     word_colors = Category20_16
     word_colors.sort()
-    country_code = list(country_dic.keys())[list(country_dic.values()).index(country_input.value)]
-    src,map_src = make_data_set(list_sp_objs, country_code,dropdown.value)
 
-
+    src, map_src = make_data_set(list_sp_objs, country_code, dropdown.value)
 
     p = make_plot(src)
-    map = make_map(map_src,country_input,dropdown.value)
+    map = make_map(map_src, country_input, dropdown.value)
     # Put controls in a single element
     controls = widgetbox(country_input)
 
     # Create a row layout
-    layout = row(column(controls,dropdown),map)
+    layout = row(column(controls, dropdown, p), map,)
 
     # Make a tab with the layout
-    tab = Panel(child=layout, title = 'Most Common words')
+    tab = Panel(child=layout, title='Country referencing')
 
     return tab

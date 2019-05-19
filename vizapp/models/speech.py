@@ -72,7 +72,7 @@ def speech_tab(list_of_sp_obj):
             labels = ['Total'] + labels
 
         colors = word_colors[:len(multi_counts)]
-        multi_years = [years]*len(multi_counts)
+        multi_years = [years] * len(multi_counts)
 
         data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
                 'labels': labels}
@@ -98,11 +98,11 @@ def speech_tab(list_of_sp_obj):
         all_counts = sum(country_counter.values())
         top_counts = len(country_counts)
         data['country'].append('other')
-        data['counts'].append(all_counts-top_counts)
+        data['counts'].append(all_counts - top_counts)
 
         # NOTE: this is wrt the most common ones. TDOD change!
         total_counts = sum(data['counts'])
-        data['angle'] = [i/total_counts*2*pi for i in data['counts']]
+        data['angle'] = [i / total_counts * 2 * pi for i in data['counts']]
         data['color'] = Category20c[len(data['country'])]
         return data
 
@@ -122,7 +122,7 @@ def speech_tab(list_of_sp_obj):
         country_names = [country_shapes[i]['name'] for i in k]
         # country_rates = list(range(len(country_names)))
 
-        country_rates = [float('NaN')]*len(country_names)
+        country_rates = [float('NaN')] * len(country_names)
         country_inds = {country_shapes[j]['ID']: i for i, j in enumerate(k)}
 
         for i in range(len(data['country'])):
@@ -142,7 +142,6 @@ def speech_tab(list_of_sp_obj):
 
         return src_map
 
-
     def make_bar_data(country_counter, max_countries=10):
         if max_countries > 19:
             print('CAN\'T')
@@ -159,7 +158,7 @@ def speech_tab(list_of_sp_obj):
         return data
 
     def make_plot(src, selected_countries):
-        p = figure(plot_width=400, plot_height=400)
+        p = figure(plot_height=400)
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
@@ -239,12 +238,11 @@ def speech_tab(list_of_sp_obj):
 
         return(p)
 
-
     def make_bar_plot(src):
         r_range = FactorRange(factors=src.data['country'])
         # src.data['country']
         p = figure(x_range=r_range, plot_height=350, title="Word Counts",
-                    toolbar_location=None, tools="")
+                   toolbar_location=None, tools="")
 
         # glyph = VBar(x='country', top='counts', bottom=0, width=.8,
         #          fill_color="#e12127")
@@ -253,7 +251,7 @@ def speech_tab(list_of_sp_obj):
         #         fill_color=factor_cmap('country', palette=palette, factors=src.data['country']),
         #         legend="country", source=src)
         p.vbar(x='country', top='counts', bottom=0, width=.8,
-            fill_color=Viridis11[-1],
+               fill_color=Viridis11[-1],
                  source=src)
 
         return p
@@ -274,10 +272,10 @@ def speech_tab(list_of_sp_obj):
         print('updating', multi_select.value)
         (word_frequency_to_plot,
          pie_src_new, map_src_new, new_bar_src) = make_data_set(list_of_sp_obj,
-                                                   text_input.value,
-                                                   multi_select.value,
-                                                   total_box.active,
-                                                   range_slider.value)
+                                                                text_input.value,
+                                                                multi_select.value,
+                                                                total_box.active,
+                                                                range_slider.value)
         # print(text_input.value, word_frequency_to_plot)
         src.data.update(word_frequency_to_plot.data)
         pie_src.data.update(pie_src_new.data)
@@ -307,7 +305,7 @@ def speech_tab(list_of_sp_obj):
     range_slider = RangeSlider(start=1970, end=2015, value=(1970, 2015), step=1., title="Years")
     range_slider.on_change('value', update)
     src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
-                                          multi_select.value, total_box.active,range_slider.value)
+                                                   multi_select.value, total_box.active, range_slider.value)
     # src, pie_src, map_src, bar_src = make_data_set(list_of_sp_obj, text_input.value,
     #                                       multi_select.value, total_box.active)
     p = make_plot(src, multi_select.value)
