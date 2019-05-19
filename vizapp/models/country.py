@@ -1,13 +1,10 @@
 import re
 from collections import Counter
 from bokeh.layouts import widgetbox, row, column
-from bokeh.models.widgets import TextInput, MultiSelect, Toggle, CheckboxGroup, Dropdown
+from bokeh.models.widgets import TextInput, Dropdown
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
-from bokeh.palettes import Category20c, Category20_16
-from bokeh.io import output_file, show
-from bokeh.transform import cumsum
-from .make_speeches import Speech
+from bokeh.palettes import Category20_16
 from pathlib import Path
 import pickle
 from bokeh.models import LogColorMapper
@@ -18,54 +15,11 @@ from .utils import country_shapes
 from .utils import country_dic
 
 list_country_codes = list(country_dic.keys())
-dict_mentions = dict()
-dict_is_mentioned_by = dict()
-
-
-def create_dict(list_of_sp_obj):
-
-    def find_country_in_text(sp_obj):
-        for country_abbr, country_name in country_dic.items():
-            if country_name in sp_obj.word_frequency.keys():
-                try:
-                    x = dict_mentions[sp_obj.country]
-                except KeyError:
-                    dict_mentions[sp_obj.country] = dict()
-                print(f'Sp obj country name {sp_obj.country}')
-                if sp_obj.year in dict_mentions[sp_obj.country]:
-                    dict_mentions[sp_obj.country][sp_obj.year].append(
-                        [country_abbr, sp_obj.word_frequency[country_name]])
-                else:
-                    dict_mentions[sp_obj.country][sp_obj.year] = [
-                        [country_abbr, sp_obj.word_frequency[country_name]]]
-
-                try:
-                    x = dict_is_mentioned_by[country_abbr]
-                except KeyError:
-                    dict_is_mentioned_by[country_abbr] = dict()
-                print(f'Country name: {country_name} and abbr {country_abbr}')
-                print(f'Sp obj country name {sp_obj.country}')
-                if sp_obj.year in dict_is_mentioned_by[country_abbr]:
-                    dict_is_mentioned_by[country_abbr][sp_obj.year].append(
-                        [sp_obj.country, sp_obj.word_frequency[country_name]])
-                else:
-                    dict_is_mentioned_by[country_abbr][sp_obj.year] = [
-                        [sp_obj.country, sp_obj.word_frequency[country_name]]]
-
-    for sp in list_of_sp_obj:
-        find_country_in_text(sp)
-    with open('mentions.pickle', 'wb') as handle:
-        print('Saving "Mentions" dictionary')
-        pickle.dump(dict_mentions, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    with open('is_mentioned_by.pickle', 'wb') as handles:
-        print('Saving "Is Mentioned By" dictionary')
-        pickle.dump(dict_is_mentioned_by, handles, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def country_tab(list_sp_objs):
 
     def make_data_set(speeches, country, type_display):
-        counter = Counter()
         overall_counter = Counter()
         word_counter = dict()
 
@@ -96,8 +50,6 @@ def country_tab(list_sp_objs):
             most_common_counter[mcw] = overall_counter[mcw]
         word = list(dict(most_common_counter).keys())
         counts = list(dict(most_common_counter).values())
-        # for sp in sp_country:
-        #     counter[sp.year] += sp.word_frequency[word]
 
         for w in most_common_words:
             word_counter[w] = Counter()
@@ -126,11 +78,12 @@ def country_tab(list_sp_objs):
         labels = most_common_words
         data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
                 'labels': labels}
+
         if type_display == 'mentions':
             prepared_map_data = make_map_data(tot_mentions)
         else:
             prepared_map_data = make_map_data(tot_mentioned_by)
-        print(data)
+
         return ColumnDataSource(data), ColumnDataSource(prepared_map_data)
 
     def update(attr, old, new):
@@ -180,7 +133,7 @@ def country_tab(list_sp_objs):
             except KeyError:
                 print("Check the country again!")
                 return None, None
-        years = sorted(list(dict_of_int.keys()))
+
         return dict_of_int
 
     def make_plot(src):
