@@ -1,16 +1,14 @@
 import re
+import pickle
 from collections import Counter
+from pathlib import Path
 from bokeh.layouts import widgetbox, row, column
 from bokeh.models.widgets import TextInput, Dropdown
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, Panel, Range1d
 from bokeh.palettes import Category20_16
-from pathlib import Path
-import pickle
 from bokeh.models import LogColorMapper
 from bokeh.palettes import Viridis6 as palette
-
-
 from .utils import country_shapes
 from .utils import country_dic
 
@@ -22,7 +20,6 @@ def country_tab(list_sp_objs):
     def make_data_set(speeches, country, type_display):
         overall_counter = Counter()
         word_counter = dict()
-
         dict_of_selected_counters_inp = search_mentions(country)
         dict_of_selected_counters_out = search_is_mentioned_by(country)
         tot_mentions = Counter()
@@ -89,7 +86,7 @@ def country_tab(list_sp_objs):
     def update(attr, old, new):
         country_code = list(country_dic.keys())[list(
             country_dic.values()).index(country_input.value)]
-        print('updating ', country_input.value, country_code, dropdown.value)
+        # print('updating ', country_input.value, country_code, dropdown.value)
         (word_frequency_to_plot,
          map_data) = make_data_set(list_sp_objs,
                                    country_code, dropdown.value)
@@ -99,11 +96,12 @@ def country_tab(list_sp_objs):
 
     def search_mentions(input_country, output_countries=list_country_codes):
         specific_mentions_dict = yearwise_data(input_country, 'mentions')
+
         return specific_mentions_dict
 
     def search_is_mentioned_by(input_country, output_countries=list_country_codes):
-
         specific_mentioned_by_dict = yearwise_data(input_country, 'is_mentioned_by')
+
         return specific_mentioned_by_dict
 
     def yearwise_data(inp_country, m):
