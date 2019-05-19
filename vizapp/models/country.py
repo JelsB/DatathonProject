@@ -170,7 +170,10 @@ def country_tab(list_sp_objs):
         '''
         # [x for x in dict_searched_country[1989] if x[0]=='COL']
         # print(inp_country,out_country,m)
-        with open(Path(f'{m}.pickle'), 'rb') as pkl_file:
+        input_file = Path.cwd().joinpath(f'data/{m}.pickle')
+        # Path.cwd().joinpath('data/members_dic.pkl')
+
+        with input_file.open('rb') as pkl_file:
             dict = pickle.load(pkl_file)
             try:
                 dict_of_int = dict[inp_country]
