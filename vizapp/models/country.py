@@ -70,7 +70,7 @@ def country_tab(list_sp_objs):
         # print(selected_data)
 
         multi_counts = [val for val in selected_data.values()]
-        multi_years = [years] * len(multi_counts)
+        multi_years = [list(years)] * len(multi_counts)
         colors = word_colors[:len(multi_counts)]
         labels = most_common_words
         data = {'counts': multi_counts, 'years': multi_years, 'colors': colors,
@@ -135,7 +135,7 @@ def country_tab(list_sp_objs):
         return dict_of_int
 
     def make_plot(src):
-        p = figure(plot_width=400, plot_height=400)
+        p = figure(plot_height=600)
         # print('SRC', src['years'], src['counts'])
         # print(src.daa['labels'])
         p.multi_line('years', 'counts', color='colors', legend='labels',
@@ -225,7 +225,7 @@ def country_tab(list_sp_objs):
     controls = widgetbox(country_input)
 
     # Create a row layout
-    layout = row(column(controls, dropdown), map)
+    layout = row(column(controls, dropdown, p), map,)
 
     # Make a tab with the layout
     tab = Panel(child=layout, title='Country referencing')
